@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block navlist %}
+    <li id="nav-forms" class="nav-item">
+        <a class="nav-link" href="store">Документы</span></a>
+    </li>
+    <!-- <li id="nav-reports" class="nav-item">
+        <a class="nav-link" href="reports">Отчеты</a>
+    </li> -->
+    <li id="nav-admin" class="nav-item active">
+        <a class="nav-link" href="handbook">Справочники</a>
+    </li>
+    <li id="nav-admin" class="nav-item">
+        <a class="nav-link" href="archive">Архив</a>
+    </li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid flexbox">
+    {% for model in model_data %}
+        <div class="card form-card">
+            <div class="card-body flexbox-col">
+                <div class="card-header" style="margin-bottom: 20px;">
+                    <h2 style="display: flex;">{{ model.name }}</h2>
+                </div>
+                {% for entry in model.entities %}
+                    <a class="btn handbook-model-entity" href="{{ entry.href }}">{{ forloop.counter }}. {{ entry.value }}</a>
+                {% endfor %}
+                <div class="fill-height" style="margin-top: 20px;"></div>
+                <div class="flexbox">
+                    <a href={{ model.link }} class="btn btn-primary"><strong>+</strong> Добавить</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
