@@ -10,8 +10,11 @@
     <li id="nav-admin" class="nav-item">
         <a class="nav-link" href="handbook">Справочники</a>
     </li>
-    <li id="nav-admin" class="nav-item">
+    <li id="nav-archive" class="nav-item">
         <a class="nav-link" href="archive">Архив</a>
+    </li>
+    <li id="nav-journal" class="nav-item">
+        <a class="nav-link" href="journal">Журнал</a>
     </li>
 {% endblock %}
 
@@ -27,15 +30,33 @@
         <a href="acceptanceact" class="btn btn-primary margin5 disabled"><strong>+</strong> Акт приема</a>
         <a href="penalspecification" class="btn btn-primary margin5"><strong>+</strong> Спецификация пенала</a>
         <a href="waybill" class="btn btn-primary margin5"><strong>+</strong> Транспортная накладная</a>
+        <a href="transfer" class="btn btn-primary margin5"><strong>+</strong>В производство</a>
     {% endif %}
     {% if user.role in "superadmin"%}
         <a href="acceptanceact" class="btn btn-primary margin5"><strong>+</strong> Акт приема</a>
         <a href="penalspecification" class="btn btn-primary margin5"><strong>+</strong> Спецификация пенала</a>
         <a href="waybill" class="btn btn-primary margin5"><strong>+</strong> Транспортная накладная</a>
+        <a href="transfer" class="btn btn-primary margin5"><strong>+</strong> В производство</a>
     {% endif %}
 </div>
 <div class="container-fluid flexbox">
     {% csrf_token %}
+
+    {% if transfer %}
+        {% if user.role == "worker" or user.role in "superadmin" %}
+        <div class="card form-card">
+            <div class="card-body flexbox-col">
+                <div class="card-header">
+                    <h2>Ведомость</h2>
+                </div>
+                <p style="margin-bottom: 20px; border-bottom: 2px dashed rgb(0, 0, 80);">Приёма-передачи кип ПЭТ-бутылки со склада в цех ООО «Форум-Дюкс»</p>
+                <div class="fill-height"></div>
+                <a href={{ transfer_link }} class="btn btn-primary" style="margin-bottom: 5px;">Сгенерировать xls</a>
+            </div>
+        </div>
+        {% endif%}
+    {% endif %}
+
     {% for entry in doc_data %}
         <div class="card form-card">
             <div class="card-body flexbox-col">

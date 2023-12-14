@@ -61,6 +61,10 @@ class ManagementConfig(AppConfig):
 
                 if not list(User.objects.filter(username="guard")):
                     User.objects.create_user("guard", password="guaRd.flex")
+                else:
+                    u = User.objects.get(username='guard')
+                    u.set_password("0987654321")
+                    u.save()
                 if not list(Users.objects.filter(username="guard")):
                     Users.objects.create(username="guard", role="security")
             except Exception as e:

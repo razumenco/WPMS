@@ -111,6 +111,19 @@ class Waybill(models.Model):
     def __str__(self):
         return f'Транспортная накладная № {self.waybill_num} от {self.date.strftime("%d.%m.%Y")}'
 
+class TransferToProd(models.Model):
+
+    shift_num = models.IntegerField(null=True)
+    date = models.DateTimeField(auto_now_add=True, blank=True)
+    act = models.ForeignKey(AcceptanceAct, on_delete=models.SET_NULL, null=True)
+    transfer_weight = models.IntegerField(null=True)
+    transfer_count = models.IntegerField(null=True)
+    store_executive = models.ForeignKey(Worker, on_delete=models.SET_NULL, null=True, related_name='store_executive')
+    prod_executive = models.ForeignKey(Worker, on_delete=models.SET_NULL, null=True, related_name='prod_executive')
+
+    def __str__(self):
+        return f'Передано в производство {self.transfer_count} кип общим весом {self.transfer_weight} кг'
+
 class Users(models.Model):
 
     username = models.CharField(max_length=20, null=True)

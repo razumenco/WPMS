@@ -59,6 +59,14 @@ var translateLabelsDict = {
         'specification': 'Спецификация пенала',
         'car': 'Автомобиль',
         'driver': 'Водитель'
+    },
+    'transfer': {
+        'shift_num': 'Номер смены',
+        'act': 'Номер пенала',
+        'transfer_weight': 'Вес выданной бутылки',
+        'transfer_count': 'Количество кип',
+        'store_executive': 'Ответственный(склад)',
+        'prod_executive': 'Ответственный(цех)'
     }
 };
 
@@ -132,6 +140,43 @@ function addWeightInputs(inputTextarea) {
     inputTextarea.css('display', 'none');
 }
 
+function addAcceptanceActFields(inputTextarea) {
+    inputTextarea.parent().css('display', 'none');
+    $(".form-submit-wrapper").before(
+        $("<div>").addClass("form-group").append(
+            $("<label>").attr("for", "bb_count").css("color", "white").html("Количество б/б")
+        ).append(
+            $("<input>").attr("type", "number").attr("name", "bb_count").attr("required", true).attr("id", "bb_count").addClass("form-control").css("max-width", "600px").on('change', function() {
+                if ($("#bb_count").val() && $("#bb_weight").val()) {
+                    let numList = [];
+                    let count = parseInt($("#bb_count").val());
+                    let weight = parseInt($("#bb_weight").val());
+                    for (let i = 0; i < count; i++) {
+                        numList.push(weight / count);
+                    }
+                    inputTextarea.html(JSON.stringify(numList));
+                }
+            })
+        )
+    );
+    $(".form-submit-wrapper").before(
+        $("<div>").addClass("form-group").append(
+            $("<label>").attr("for", "bb_weight").css("color", "white").html("Общий вес")
+        ).append(
+            $("<input>").attr("type", "number").attr("name", "bb_weight").attr("required", true).attr("id", "bb_weight").addClass("form-control").css("max-width", "600px").on('change', function() {
+                if ($("#bb_count").val() && $("#bb_weight").val()) {
+                    let numList = [];
+                    let count = parseInt($("#bb_count").val());
+                    let weight = parseInt($("#bb_weight").val());
+                    for (let i = 0; i < count; i++) {
+                        numList.push(weight / count);
+                    }
+                    inputTextarea.html(JSON.stringify(numList));
+                }
+            })
+        )
+    );
+}
 
 $(document).ready(function() {
     $(window).keydown(function(event){
@@ -155,8 +200,18 @@ $(document).ready(function() {
     $("input:checkbox").css("position", "relative").css("margin", "10px").after(checkLabel);
     translateForm();
     let weightList = $("textarea[name='weight_list']");
-    if (weightList) {
-        addWeightInputs(weightList);
+    if (weightList.lenght) {
+        let formId;
+        if ($("form").attr("id").split('/')[0]) {
+            formId = $("form").attr("id").split('/')[0];
+        } else {
+            formId = $("form").attr("id").split('/')[1];
+        }
+        if (formId == "acceptanceact") {
+            addAcceptanceActFields(weightList);
+        } else {
+            addWeightInputs(weightList);
+        }
     }
     $("label[for='id_weight_list']").css("margin-left", "20px").css("font-size", "25px");
 });

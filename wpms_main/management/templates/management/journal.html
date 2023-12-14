@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block navlist %}
+    <li id="nav-forms" class="nav-item">
+        <a class="nav-link" href="store">Документы</span></a>
+    </li>
+    <!-- <li id="nav-reports" class="nav-item">
+        <a class="nav-link" href="reports">Отчеты</a>
+    </li> -->
+    <li id="nav-admin" class="nav-item">
+        <a class="nav-link" href="handbook">Справочники</a>
+    </li>
+    <li id="nav-admin" class="nav-item">
+        <a class="nav-link" href="archive">Архив</a>
+    </li>
+    <li id="nav-journal" class="nav-item active">
+        <a class="nav-link" href="journal">Журнал</a>
+    </li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid flexbox">
+    <div class="archive-table">
+        <table class="table" style="text-align: center;">
+            <thead>
+                <tr>
+                    <th scope="col" colspan="3">{{ cur_date }}</th>
+                    <th scope="col" colspan="2">Остаток на начало дня</th>
+                    <th scope="col" colspan="2">Поступление</th>
+                    <th scope="col" colspan="2">Расход</th>
+                    <th scope="col" colspan="2">Остаток на конец дня</th>
+                </tr>
+            </thead>
+            <tr style="font-weight: 600;">
+                <td scope="col">Дата</td>
+                <td scope="col">Партия</td>
+                <td scope="col">Номенклатура</td>
+                <td scope="col">Т</td>
+                <td scope="col">шт</td>
+                <td scope="col">Т</td>
+                <td scope="col">шт</td>
+                <td scope="col">Т</td>
+                <td scope="col">шт</td>
+                <td scope="col">Т</td>
+                <td scope="col">шт</td>
+            </tr>
+            {% for data in journal_data %}
+                <tr>
+                    <td scope="col">{{ data.date }}</td>
+                    <td scope="col">{{ data.act }}</td>
+                    <td scope="col">{{ data.nom }}</td>
+                    <td scope="col">{{ data.rest_weight }}</td>
+                    <td scope="col">{{ data.rest_count }}</td>
+                    <td scope="col">{{ data.arrival_weight }}</td>
+                    <td scope="col">{{ data.arrival_count }}</td>
+                    <td scope="col">{{ data.flow_weight }}</td>
+                    <td scope="col">{{ data.flow_count }}</td>
+                    <td scope="col">{{ data.final_rest_weight }}</td>
+                    <td scope="col">{{ data.final_rest_count }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

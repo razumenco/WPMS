@@ -37,6 +37,9 @@ urlpatterns = [
     path('acceptanceact/<int:id>/delete', views.acceptance_act_delete, name='acceptance_act_delete'),
     path('penalspecification/<int:id>/delete', views.penal_specification_delete, name='penal_specification_delete'),
     path('waybill/<int:id>/delete', views.waybill_delete, name='waybill_delete'),
+    path('transfer', views.transfer, name='transfer'),
+    path('transfer/<str:fn>', views.generate_transfer, name='generate_transfer'),
+    path('journal', views.journal, name='journal'),
     path('login', views.login_view, name='login'),
     path('logout', views.logout_view, name='login')
 ]

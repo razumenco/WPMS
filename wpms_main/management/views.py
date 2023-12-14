@@ -112,7 +112,9 @@ def store(request):
     doc_data.sort(key=lambda x: x["date"], reverse=True)
     context = {
         "doc_data": doc_data,
-        "user": Users.objects.filter(username=request.user.username).get()
+        "user": Users.objects.filter(username=request.user.username).get(),
+        "transfer": TransferToProd.objects.all(),
+        "transfer_link": f"/transfer/transfer_to_prod{timezone.now().day}.{timezone.now().month}.{timezone.now().year}.xlsx"
     }
     return HttpResponse(template.render(context, request))
 
@@ -326,6 +328,51 @@ def waybill(request):
         "is_doc": True
     }
     return HttpResponse(template.render(context, request))
+
+def generate_transfer_xls(tmplt_path, res_path, penal_data, transfer_data):
+    print(penal_data)
+    print(transfer_data)
+    wb = openpyxl.load_workbook(tmplt_path)
+    pg = wb['Лист1']
+    for penal in penal_data:
+        pg.append([penal[0], "", "", "", penal[1], penal[2], penal[3]])
+    pg.append(["№ смены", "Дата", "время", "№ пенала", "Вес выданной бутылки", "Кол-во кип", "ФИО ответственных"])
+    for transfer in transfer_data:
+        pg.append([transfer[0], transfer[1], transfer[2], transfer[3], transfer[4], transfer[5], transfer[6]])
+    wb.save(res_path)
+
+def generate_transfer(request, fn):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    tmplt_path = os.path.join(os.path.dirname(__file__), 'static', 'files', 'transfer_template.xlsx')
+    res_path = os.path.join(os.path.dirname(__file__), 'static', 'files', 'transfer.xlsx')
+    penal_data = []
+    transfer_data = []
+    act_nums = set()
+    for transfer in TransferToProd.objects.all():
+        p = []
+        act = AcceptanceAct.objects.get(pk=transfer.act_id)
+        if act.act_num not in act_nums and act.weight_list:
+            p.append(act.act_num)
+            p.append(sum(act.weight_list))
+            p.append(act.penal_count * len(act.weight_list))
+            p.append(sum(act.weight_list) / (act.penal_count * len(act.weight_list)))
+            penal_data.append(p)
+            act_nums.add(act.act_num)
+        t = []
+        t.append(transfer.shift_num)
+        t.append(transfer.date.strftime("%d.%m.%Y"))
+        t.append(transfer.date.strftime("%H:%M"))
+        t.append(act.act_num)
+        t.append(transfer.transfer_weight)
+        t.append(transfer.transfer_count)
+        t.append(f"Склад: {transfer.store_executive}, Цех: {transfer.prod_executive}")
+        transfer_data.append(t)
+    generate_transfer_xls(tmplt_path, res_path, penal_data, transfer_data)
+    with open(res_path, "rb") as file:
+        response = HttpResponse(content=file)
+        response['Content-Type'] = 'application/xlsx'
+    return response
 
 def generate_waybill_xls(tmplt_path, res_path, data):
     wb = openpyxl.load_workbook(tmplt_path)
@@ -563,6 +610,27 @@ def acceptanceactcarweight(request, id):
         "header": header,
         "href": "/store",
         "is_doc": True
+    }
+    return HttpResponse(template.render(context, request))
+
+def transfer(request):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    template = loader.get_template("management/form.html")
+    header = "Отправить в производство"
+    if request.method == "POST":
+        form = TransferToProdForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("/store")
+        else:
+            header = "Ошибка при сохранении"
+    bank_form = TransferToProdForm()
+    context = {
+        "form": bank_form,
+        "url": "/transfer",
+        "header": header,
+        "href": "/store"
     }
     return HttpResponse(template.render(context, request))
 
@@ -893,6 +961,55 @@ def edit_productnom(request, id):
         "url": "/productnom/" + str(entity.id),
         "header": header,
         "href": "/handbook"
+    }
+    return HttpResponse(template.render(context, request))
+
+def journal(request):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    template = loader.get_template("management/journal.html")
+    journal_data = []
+    for act in AcceptanceAct.objects.filter(status="done"):
+        remain_count = 0
+        remain_weight = 0
+        data = {
+            "date": act.date.strftime("%d.%m.%Y"),
+            "act": f"{act.act_num} {Organization.objects.get(pk=act.sender_id).name}",
+            "nom": RawMaterial.objects.get(pk=act.raw_material_id).feature,
+            "rest_count": remain_count,
+            "rest_weight": remain_weight,
+        }
+        remain_weight += round(sum(act.weight_list) / 1000, 2)
+        remain_count += int(act.penal_count * len(act.weight_list))
+        data["arrival_count"] = remain_count
+        data["arrival_weight"] = remain_weight
+        data["flow_count"] = 0
+        data["flow_weight"] = 0
+        data["final_rest_count"] = remain_count
+        data["final_rest_weight"] = remain_weight
+        journal_data.append(data)
+        for transfer in TransferToProd.objects.filter(act_id=act.id).order_by("date"):
+            data = {
+                "date": transfer.date.strftime("%d.%m.%Y"),
+                "act": f"{act.act_num} {Organization.objects.get(pk=act.sender_id).name}",
+                "nom": RawMaterial.objects.get(pk=act.raw_material_id).feature,
+                "rest_count": remain_count,
+                "rest_weight": remain_weight,
+            }
+            remain_weight -= round(transfer.transfer_weight / 1000, 2)
+            remain_count -= int(transfer.transfer_count)
+            data["arrival_count"] = 0
+            data["arrival_weight"] = 0
+            data["flow_count"] = transfer.transfer_count
+            data["flow_weight"] = round(transfer.transfer_weight / 1000, 2)
+            data["final_rest_count"] = remain_count
+            data["final_rest_weight"] = round(remain_weight, 2)
+            journal_data.append(data)
+    journal_data.sort(key=lambda x: x["date"])
+    context = {
+        "user": Users.objects.filter(username=request.user.username).get(),
+        "cur_date": timezone.now().strftime("%d.%m.%Y"),
+        "journal_data": journal_data
     }
     return HttpResponse(template.render(context, request))
 

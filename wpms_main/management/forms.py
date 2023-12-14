@@ -38,7 +38,6 @@ class AcceptanceActForm(ModelForm):
     class Meta:
         model = AcceptanceAct
         fields = [
-            'act_num',
             'in_weight',
             'car',
             'driver'
@@ -49,6 +48,7 @@ class AcceptanceActFormInit(ModelForm):
     class Meta:
         model = AcceptanceAct
         fields = [
+            'act_num',
             'receiver',
             'sender',
             'platform',
@@ -74,6 +74,12 @@ class AcceptanceActCarWeightsForm(ModelForm):
         fields = [
             'out_weight'
         ]
+
+class TransferToProdForm(ModelForm):
+
+    class Meta:
+        model = TransferToProd
+        fields = "__all__"
 
 class OrganizationForm(ModelForm):
 
