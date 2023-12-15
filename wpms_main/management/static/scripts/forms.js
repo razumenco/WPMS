@@ -44,7 +44,7 @@ var translateLabelsDict = {
         'weight_list': 'Веса б/б',
         'penal_count': 'Количество кип в б/б',
         'out_weight': 'Вес автомобиля на выезде',
-        'bb_count': 'Количество б/б'
+        'kip_count': 'Количество кип'
     },
     'penalspecification': {
         'specification_num': 'Номер спецификации',

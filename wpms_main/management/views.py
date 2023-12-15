@@ -599,7 +599,18 @@ def acceptanceactcarweight(request, id):
         if form.is_valid():
             act = form.save(commit=False)
             act.status = "done"
-            act.weight_list = [(int(act.in_weight) - int(act.out_weight)) / int(act.bb_count)] * int(act.bb_count)
+            weight = []
+            kip_weight = (int(act.in_weight) - int(act.out_weight)) / act.kip_count
+            kip_count = act.kip_count
+            i = act.penal_count
+            while kip_count > 0:
+                if kip_count // i > 0:
+                    kip_count -= i
+                    weight.append(i * kip_weight)
+                else:
+                    weight.append(kip_count * kip_weight)
+                    kip_count -= i
+            act.weight_list = weight
             act.save()
             return redirect("/store")
         else:

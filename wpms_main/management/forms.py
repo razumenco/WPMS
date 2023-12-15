@@ -64,7 +64,7 @@ class AcceptanceActWeightsForm(ModelForm):
         model = AcceptanceAct
         fields = [
             'penal_count',
-            'bb_count'
+            'kip_count'
         ]
 
 class AcceptanceActCarWeightsForm(ModelForm):
