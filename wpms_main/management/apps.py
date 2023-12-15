@@ -23,7 +23,7 @@ class ManagementConfig(AppConfig):
 
         def background_process():
             while True:
-                delta = timedelta(days=3)
+                delta = timedelta(days=1)
                 for act in AcceptanceAct.objects.filter(status="done"):
                     if check_time_expired(act.date, delta):
                         act.status = "archive"

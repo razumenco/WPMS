@@ -567,7 +567,7 @@ def acceptanceactweight(request, id):
         return redirect("/")
     act = get_object_or_404(AcceptanceAct, pk=id)
     template = loader.get_template("management/form.html")
-    header = "Добавить веса пеналов"
+    header = "Добавить количество пеналов"
     if request.method == "POST":
         form = AcceptanceActWeightsForm(request.POST, instance=act)
         if form.is_valid():
@@ -599,6 +599,7 @@ def acceptanceactcarweight(request, id):
         if form.is_valid():
             act = form.save(commit=False)
             act.status = "done"
+            act.weight_list = [(int(act.in_weight) - int(act.out_weight)) / int(act.bb_count)] * int(act.bb_count)
             act.save()
             return redirect("/store")
         else:

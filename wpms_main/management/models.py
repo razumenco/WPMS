@@ -75,6 +75,7 @@ class AcceptanceAct(models.Model):
     in_weight = models.IntegerField(null=True)
     out_weight = models.IntegerField(null=True)
     penal_count = models.IntegerField(null=True)
+    bb_count = models.IntegerField(null=True)
     car = models.ForeignKey(Car, on_delete=models.SET_NULL, null=True)
     driver = models.ForeignKey(Driver, on_delete=models.SET_NULL, null=True)
     receiving_worker = models.ForeignKey(Worker, on_delete=models.SET_NULL, null=True)

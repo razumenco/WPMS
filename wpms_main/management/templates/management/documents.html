@@ -7,15 +7,17 @@
     <!-- <li id="nav-reports" class="nav-item">
         <a class="nav-link" href="reports">Отчеты</a>
     </li> -->
-    <li id="nav-admin" class="nav-item">
-        <a class="nav-link" href="handbook">Справочники</a>
-    </li>
-    <li id="nav-archive" class="nav-item">
-        <a class="nav-link" href="archive">Архив</a>
-    </li>
-    <li id="nav-journal" class="nav-item">
-        <a class="nav-link" href="journal">Журнал</a>
-    </li>
+    {% if user.role != "security" %}
+        <li id="nav-admin" class="nav-item">
+            <a class="nav-link" href="handbook">Справочники</a>
+        </li>
+        <li id="nav-archive" class="nav-item">
+            <a class="nav-link" href="archive">Архив</a>
+        </li>
+        <li id="nav-journal" class="nav-item">
+            <a class="nav-link" href="journal">Журнал</a>
+        </li>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -23,8 +25,8 @@
     <div style="flex-grow: 1;"></div>
     {% if user.role != "worker" and user.role not in "superadmin" %}
         <a href="acceptanceact" class="btn btn-primary margin5"><strong>+</strong> Акт приема</a>
-        <a href="penalspecification" class="btn btn-primary margin5 disabled"><strong>+</strong> Спецификация пенала</a>
-        <a href="waybill" class="btn btn-primary margin5 disabled"><strong>+</strong> Транспортная накладная</a>
+        <!-- <a href="penalspecification" class="btn btn-primary margin5 disabled"><strong>+</strong> Спецификация пенала</a>
+        <a href="waybill" class="btn btn-primary margin5 disabled"><strong>+</strong> Транспортная накладная</a> -->
     {% endif %}
     {% if user.role != "security" and user.role not in "superadmin"%}
         <a href="acceptanceact" class="btn btn-primary margin5 disabled"><strong>+</strong> Акт приема</a>
