@@ -36,15 +36,18 @@ var translateLabelsDict = {
         'platform': 'Площадка',
         'raw_material': 'Характеристика сырья',
         'waybill_num': 'Номер накладной (напр. Н1324)',
-        'waybill_weight': 'Вес согласно накладной',
+        'waybill_weight': 'Вес согласно накладной (в кг)',
         'in_weight': 'Вес автомобиля на въезде (в кг)',
         'car': 'Автомобиль',
         'driver': 'Водитель',
         'receiving_worker': 'Сотрудник получатель',
-        'weight_list': 'Веса б/б',
+        'weight_list': 'Веса б/б (в кг)',
         'penal_count': 'Количество кип в б/б',
-        'out_weight': 'Вес автомобиля на выезде',
-        'kip_count': 'Количество кип'
+        'out_weight': 'Вес автомобиля на выезде (в кг)',
+        'kip_count': 'Общее количество кип',
+        'penal_count2': 'Количество кип в б/б',
+        'raw_material2': 'Характеристика сырья',
+        'kip_count2': 'Общее количество кип'
     },
     'penalspecification': {
         'specification_num': 'Номер спецификации',
@@ -53,7 +56,11 @@ var translateLabelsDict = {
         'product_feature': 'Характеристика продукции',
         'product_nom': 'Номенклатура продукции',
         'sending_worker': 'Сотрудник отправитель',
-        'weight_list': 'Веса б/б'
+        'weight_list': 'Веса б/б (в кг)',
+        'penal_count': 'Количество кип в б/б',
+        'in_weight': 'Вес автомобиля на въезде (в кг)',
+        'out_weight': 'Вес автомобиля на выезде (в кг)',
+        'kip_count': 'Общее количество кип'
     }, 
     'waybill': {
         'waybill_num': 'Номер накладной',
@@ -64,10 +71,19 @@ var translateLabelsDict = {
     'transfer': {
         'shift_num': 'Номер смены',
         'act': 'Номер пенала',
-        'transfer_weight': 'Вес выданной бутылки',
-        'transfer_count': 'Количество кип',
+        'transfer_weight': 'Вес выданной бутылки (в кг)',
+        'transfer_count': 'Общее количество кип',
         'store_executive': 'Ответственный(склад)',
         'prod_executive': 'Ответственный(цех)'
+    },
+    'waste': {
+        'black_metal': 'Черный металл (в кг)',
+        'color_metal': 'Цветной металл (в кг)',
+        'off_color_bottle': 'Бутылка нетоварных цветов (в кг)',
+        'flex': 'Флекс (экономия) (в кг)',
+        'pss': 'ПСС (в кг)',
+        'paper': 'Бумага (в кг)',
+        'other': 'Прочее (в кг)'
     }
 };
 

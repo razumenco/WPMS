@@ -47,9 +47,9 @@ def store(request):
                     Users.objects.filter(username=request.user.username).get().role == "worker"):
                 continue
             doc["link"] = f"/acceptanceact/{act.id}/weight"
-            doc["action_text"] = "Добавить веса пеналов"
+            doc["action_text"] = "Указать количество кип"
             doc["status_class"] = "not-done"
-            doc["status_text"] = "Взвешивание пеналов"
+            doc["status_text"] = "Подсчет кип"
         if act.status == "weight":
             if not Users.objects.filter(username=request.user.username).get().role in "superadmin" and not (
                     Users.objects.filter(username=request.user.username).get().role == "security"):
@@ -58,6 +58,16 @@ def store(request):
             doc["action_text"] = "Добавить вес автомобиля"
             doc["status_class"] = "not-done"
             doc["status_text"] = "Взвешивание автомобиля"
+        if act.status == "secondmaterial":
+            if not Users.objects.filter(username=request.user.username).get().role in "superadmin" and not (
+                    Users.objects.filter(username=request.user.username).get().role == "worker"):
+                continue
+            doc["link"] = f"/acceptanceact/{act.id}/secondmaterial"
+            doc["action_text"] = "Добавить второй вид сырья"
+            doc["link2"] = f"/acceptanceact/{act.id}/skip"
+            doc["action2_text"] = "Пропустить"
+            doc["status_class"] = "not-done"
+            doc["status_text"] = "Подсчет кип"
         if act.status == "done":
             if not Users.objects.filter(username=request.user.username).get().role in "superadmin" and not (
                     Users.objects.filter(username=request.user.username).get().role == "worker"):
@@ -68,9 +78,6 @@ def store(request):
             doc["status_text"] = "Оформление завершено"
         doc_data.append(doc)
     for sp in PenalSpecification.objects.filter(~Q(status="archive")):
-        if not Users.objects.filter(username=request.user.username).get().role in "superadmin" and not (
-                Users.objects.filter(username=request.user.username).get().role == "worker"):
-            continue
         doc = {}
         doc["id"] = sp.specification_num
         doc["type"] = "Спецификация пенала"
@@ -81,11 +88,35 @@ def store(request):
         doc["archive_link"] = f"penalspecification/{sp.id}/archive"
         doc["delete_link"] = f"penalspecification/{sp.id}/delete"
         if sp.status == "new":
-            doc["link"] = f"/penalspecification/{sp.id}/weight"
-            doc["action_text"] = "Добавить веса пеналов"
+            if not Users.objects.filter(username=request.user.username).get().role in "superadmin" and not (
+                    Users.objects.filter(username=request.user.username).get().role == "worker"):
+                continue
+            doc["link"] = f"/penalspecification/{sp.id}/init"
+            doc["action_text"] = "Указать данные спецификации"
             doc["status_class"] = "not-done"
-            doc["status_text"] = "Взвешивание пеналов"
+            doc["status_text"] = "Ввод данных"
+        if sp.status == "init":
+            if not Users.objects.filter(username=request.user.username).get().role in "superadmin" and not (
+                    Users.objects.filter(username=request.user.username).get().role == "worker"):
+                continue
+            doc["link"] = f"/penalspecification/{sp.id}/weight"
+            doc["action_text"] = "Указать веса б/б"
+            doc["link2"] = f"/penalspecification/{sp.id}/count"
+            doc["action2_text"] = "Указать количество кип"
+            doc["status_class"] = "not-done"
+            doc["status_text"] = "Взвешивание пенала"
+        if sp.status == "carweight":
+            if not Users.objects.filter(username=request.user.username).get().role in "superadmin" and not (
+                    Users.objects.filter(username=request.user.username).get().role == "security"):
+                continue
+            doc["link"] = f"/penalspecification/{sp.id}/carweight"
+            doc["action_text"] = "Добавить вес автомобиля"
+            doc["status_class"] = "not-done"
+            doc["status_text"] = "Взвешвание автомобиля"
         if sp.status == "done":
+            if not Users.objects.filter(username=request.user.username).get().role in "superadmin" and not (
+                    Users.objects.filter(username=request.user.username).get().role == "worker"):
+                continue
             doc["link"] = f"/penalspecification/{sp.id}/generate/spec{sp.specification_num}.xls"
             doc["action_text"] = "Сгенерировать xls"
             doc["status_class"] = "done"
@@ -420,6 +451,7 @@ def generate_waybill(request, id, fn):
         response['Content-Type'] = 'application/xlsx'
     return response
 
+
 def penal_specification(request):
     if not request.user.is_authenticated:
         return redirect("/login")
@@ -444,17 +476,42 @@ def penal_specification(request):
     }
     return HttpResponse(template.render(context, request))
 
+def penal_specification_init(request, id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    spec = get_object_or_404(PenalSpecification, pk=id)
+    template = loader.get_template("management/form.html")
+    header = "Добавить данные спецификации"
+    if request.method == "POST":
+        form = PenalSpecificationFormInit(request.POST, instance=spec)
+        if form.is_valid():
+            act = form.save(commit=False)
+            act.status = "init"
+            act.save()
+            return redirect("/store")
+        else:
+            header = "Ошибка при сохранении"
+    form = PenalSpecificationFormInit()
+    context = {
+        "form": form,
+        "url": f"/penalspecification/{id}/init",
+        "header": header,
+        "href": "/store",
+        "is_doc": True
+    }
+    return HttpResponse(template.render(context, request))
+
 def penal_specification_weight(request, id):
     if not request.user.is_authenticated:
         return redirect("/login")
     spec = get_object_or_404(PenalSpecification, pk=id)
     template = loader.get_template("management/form.html")
-    header = "Добавить веса пеналов"
+    header = "Добавить веса б/б"
     if request.method == "POST":
         form = PenalSpecificationWeightsForm(request.POST, instance=spec)
         if form.is_valid():
             spec = form.save(commit=False)
-            spec.status = "done"
+            spec.status = "carweight"
             spec.save()
             return redirect("/store")
         else:
@@ -463,6 +520,67 @@ def penal_specification_weight(request, id):
     context = {
         "form": form,
         "url": f"/penalspecification/{id}/weight",
+        "header": header,
+        "href": "/store"
+    }
+    return HttpResponse(template.render(context, request))
+
+def penal_specification_count(request, id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    spec = get_object_or_404(PenalSpecification, pk=id)
+    template = loader.get_template("management/form.html")
+    header = "Добавить количество кип"
+    if request.method == "POST":
+        form = PenalSpecificationCountForm(request.POST, instance=spec)
+        if form.is_valid():
+            spec = form.save(commit=False)
+            spec.status = "carweight"
+            spec.save()
+            return redirect("/store")
+        else:
+            header = "Ошибка при вводе данных"
+    form = PenalSpecificationCountForm()
+    context = {
+        "form": form,
+        "url": f"/penalspecification/{id}/count",
+        "header": header,
+        "href": "/store"
+    }
+    return HttpResponse(template.render(context, request))
+
+def penal_specification_carweight(request, id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    spec = get_object_or_404(PenalSpecification, pk=id)
+    template = loader.get_template("management/form.html")
+    header = "Добавить вес автомобиля на выезде"
+    if request.method == "POST":
+        form = PenalSpecificationCarWeightForm(request.POST, instance=spec)
+        if form.is_valid():
+            spec = form.save(commit=False)
+            spec.status = "done"
+            if not spec.weight_list:
+                weight = []
+                kip_weight = (int(spec.out_weight) - int(spec.in_weight)) / spec.kip_count
+                kip_count = spec.kip_count
+                i = spec.penal_count
+                while kip_count > 0:
+                    if kip_count // i > 0:
+                        kip_count -= i
+                        weight.append(i * kip_weight)
+                    else:
+                        weight.append(kip_count * kip_weight)
+                        kip_count -= i
+                spec.weight_list = weight
+            spec.save()
+            return redirect("/store")
+        else:
+            header = "Ошибка при вводе данных"
+    form = PenalSpecificationCarWeightForm()
+    context = {
+        "form": form,
+        "url": f"/penalspecification/{id}/carweight",
         "header": header,
         "href": "/store"
     }
@@ -540,7 +658,7 @@ def acceptanceactinit(request, id):
         return redirect("/")
     template = loader.get_template("management/form.html")
     act = get_object_or_404(AcceptanceAct, pk=id)
-    header = "Добавить акт приема сырья"
+    header = "Указать данные акта приема сырья"
     if request.method == "POST":
         form = AcceptanceActFormInit(request.POST, instance=act)
         if form.is_valid():
@@ -567,9 +685,36 @@ def acceptanceactweight(request, id):
         return redirect("/")
     act = get_object_or_404(AcceptanceAct, pk=id)
     template = loader.get_template("management/form.html")
-    header = "Добавить количество пеналов"
+    header = "Добавить количество кип"
     if request.method == "POST":
         form = AcceptanceActWeightsForm(request.POST, instance=act)
+        if form.is_valid():
+            act = form.save(commit=False)
+            act.status = "secondmaterial"
+            act.save()
+            return redirect("/store")
+        else:
+            header = "Убедитесь в корректном заполнении формы"
+    form = AcceptanceActWeightsForm()
+    context = {
+        "form": form,
+        "url": f"/acceptanceact/{id}/weight",
+        "header": header,
+        "href": "/store",
+        "hint": "Если в акте присутствует несколько видов сырья, заполняйте здесь только для того вида, который был указан основным"
+    }
+    return HttpResponse(template.render(context, request))
+
+def acceptanceactsecondmaterial(request, id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    if not Users.objects.filter(username=request.user.username).get().role in "superadmin" and not (Users.objects.filter(username=request.user.username).get().role == "worker"):
+        return redirect("/")
+    act = get_object_or_404(AcceptanceAct, pk=id)
+    template = loader.get_template("management/form.html")
+    header = "Добавить второй вид сырья"
+    if request.method == "POST":
+        form = AcceptanceActSecondMaterialForm(request.POST, instance=act)
         if form.is_valid():
             act = form.save(commit=False)
             act.status = "weight"
@@ -577,14 +722,25 @@ def acceptanceactweight(request, id):
             return redirect("/store")
         else:
             header = "Убедитесь в корректном заполнении списка весов"
-    form = AcceptanceActWeightsForm()
+    form = AcceptanceActSecondMaterialForm()
     context = {
         "form": form,
-        "url": f"/acceptanceact/{id}/weight",
+        "url": f"/acceptanceact/{id}/secondmaterial",
         "header": header,
         "href": "/store"
     }
     return HttpResponse(template.render(context, request))
+
+def acceptance_act_skip_second_material(request, id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    if not Users.objects.filter(username=request.user.username).get().role in "superadmin":
+        return redirect("/")
+    if request.method == "GET":
+        act = get_object_or_404(AcceptanceAct, pk=id)
+        act.status = "weight"
+        act.save()
+        return redirect("/store")
 
 def acceptanceactcarweight(request, id):
     if not request.user.is_authenticated:
@@ -600,8 +756,9 @@ def acceptanceactcarweight(request, id):
             act = form.save(commit=False)
             act.status = "done"
             weight = []
-            kip_weight = (int(act.in_weight) - int(act.out_weight)) / act.kip_count
+            kip_weight = (int(act.in_weight) - int(act.out_weight)) / act.kip_count if not act.kip_count2 else (int(act.in_weight) - int(act.out_weight)) / (act.kip_count + act.kip_count2)
             kip_count = act.kip_count
+            kip_count2 = act.kip_count2
             i = act.penal_count
             while kip_count > 0:
                 if kip_count // i > 0:
@@ -610,6 +767,15 @@ def acceptanceactcarweight(request, id):
                 else:
                     weight.append(kip_count * kip_weight)
                     kip_count -= i
+            if kip_count2:
+                i = act.penal_count2
+                while kip_count2 > 0:
+                    if kip_count2 // i > 0:
+                        kip_count2 -= i
+                        weight.append(i * kip_weight)
+                    else:
+                        weight.append(kip_count2 * kip_weight)
+                        kip_count2 -= i
             act.weight_list = weight
             act.save()
             return redirect("/store")
@@ -654,14 +820,21 @@ def generate_acceptance_act_xls(tmplt_path, res_path, data):
     pg['B3'] = data["sender"]
     pg['B4'] = data["car"]
     pg['B5'] = data["driver"]
-    pg['B6'] = data["feature"]
+    pg['B6'] = data["feature"] if not data["feature2"] else f'{data["feature"]}, {data["feature2"]}'
     pg['B7'] = data["waybill_num"]
     pg['B8'] = data["waybill_weight"]
-    for w in data["weights"]:
-        pg.append([data["penal_count"], data["feature"], " ", w, " ", data["platform"]])
+    total = data["kip_count"]
+    for i in range(len(data["weights"])):
+        if data["feature2"] and total <= 0:
+            data["penal_count"] = data["penal_count2"]
+            total = data["kip_count2"]
+            data["feature"] = data["feature2"]
+        count = data["penal_count"] if total - data["penal_count"] > 0 else total
+        pg.append([count, data["feature"], " ", data["weights"][i], " ", data["platform"]])
+        total -= data["penal_count"]
     pg.append([" ", " ", " ", " "])
     pg.append([" ", " ", " ", " "])
-    pg.append([len(data["weights"]) * data["penal_count"], "ИТОГО", " ", sum(data["weights"]), " ", data["platform"]])
+    pg.append([data["kip_count"], "ИТОГО", " ", sum(data["weights"]), " ", data["platform"]])
     pg.append(["Вес автомобиля на въезде:", data["in_weight"], " ", " "])
     pg.append(["Вес автомобиля на выезде:", data["out_weight"], "ИТОГО", data["in_weight"] - data["out_weight"], " "])
     pg.append([" ", "ПРИНЯЛ", " ", " ", " ", data["receiving_worker"]])
@@ -682,10 +855,14 @@ def generate_acceptance_act(request, id, fn):
     data["car"] = f"{act.car.mark} {act.car.reg_num}"
     data["driver"] = str(act.driver)
     data["feature"] = str(act.raw_material)
+    data["feature2"] = str(act.raw_material2)
     data["waybill_num"] = act.waybill_num
     data["waybill_weight"] = act.waybill_weight
     data["weights"] = act.weight_list
     data["penal_count"] = act.penal_count
+    data["kip_count"] = act.kip_count
+    data["penal_count2"] = act.penal_count2
+    data["kip_count2"] = act.kip_count2
     data["platform"] = f'{act.platform.type}"{act.platform.name}"'
     data["in_weight"] = act.in_weight
     data["out_weight"] = act.out_weight
@@ -1022,6 +1199,27 @@ def journal(request):
         "user": Users.objects.filter(username=request.user.username).get(),
         "cur_date": timezone.now().strftime("%d.%m.%Y"),
         "journal_data": journal_data
+    }
+    return HttpResponse(template.render(context, request))
+
+def waste(request):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    template = loader.get_template("management/form.html")
+    header = "Добавить возвратные отходы"
+    if request.method == "POST":
+        form = WasteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("store")
+        else:
+            header = "Ошибка при сохранении"
+    form = WasteForm()
+    context = {
+        "form": form,
+        "url": "waste",
+        "header": header,
+        "href": "store"
     }
     return HttpResponse(template.render(context, request))
 

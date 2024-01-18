@@ -25,6 +25,12 @@
                     Перед оформлением документа необходимо заполнить справочники.
                 </span>
             </div>
+        {% elif hint%}
+        <div class="form-hint-wrapper">
+            <span>
+                {{ hint }}
+            </span>
+        </div>
         {% endif %}
         <div class="container-fluid flexbox-col">
             <form action={{ url }} method="post" id={{ url }}>

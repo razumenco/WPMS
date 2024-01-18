@@ -175,6 +175,7 @@ form .btn-primary {
     border: 2px solid red;
     padding: 5px;
     border-radius: 5px;
+    max-width: 600px;
 }
 
 .num-list-input {
@@ -261,6 +262,10 @@ a:hover {
 @media screen and (max-width: 510px) {
     .user-badge-wrapper {
       margin-top: 5px;
+    }
+
+    .upper-menu-grow {
+        flex-grow: 0 !important;
     }
 }
 

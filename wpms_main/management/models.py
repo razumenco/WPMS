@@ -82,6 +82,10 @@ class AcceptanceAct(models.Model):
     weight_list = models.JSONField(null=True)
     status = models.CharField(max_length=20, null=True)
 
+    raw_material2 = models.ForeignKey(RawMaterial, on_delete=models.SET_NULL, null=True, related_name='raw_material2')
+    penal_count2 = models.IntegerField(null=True)
+    kip_count2 = models.IntegerField(null=True)
+
     def __str__(self):
         return f'Акт приема сырья № {self.act_num} от {self.date.strftime("%d.%m.%Y")}'
 
@@ -96,6 +100,11 @@ class PenalSpecification(models.Model):
     sending_worker = models.ForeignKey(Worker, on_delete=models.SET_NULL, null=True)
     weight_list = models.JSONField(null=True)
     status = models.CharField(max_length=20, null=True)
+
+    in_weight = models.IntegerField(null=True)
+    out_weight = models.IntegerField(null=True)
+    penal_count = models.IntegerField(null=True)
+    kip_count = models.IntegerField(null=True)
 
     def __str__(self):
         return f'Спецификация пенала № {self.specification_num} от {self.date.strftime("%d.%m.%Y")}'
@@ -132,3 +141,17 @@ class Users(models.Model):
 
     def __str__(self):
         return f'{self.role} {self.username}'
+
+class Waste(models.Model):
+
+    black_metal = models.IntegerField(null=True)
+    color_metal = models.IntegerField(null=True)
+    off_color_bottle = models.IntegerField(null=True)
+    flex = models.IntegerField(null=True)
+    pss = models.IntegerField(null=True)
+    paper = models.IntegerField(null=True)
+    other = models.IntegerField(null=True)
+    date = models.DateTimeField(auto_now_add=True, blank=True)
+
+    def __str__(self):
+        return f"Возвратные отходы от {self.date.strftime('%d.%m.%Y')}"

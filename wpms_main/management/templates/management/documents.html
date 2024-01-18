@@ -22,19 +22,21 @@
 
 {% block content %}
 <div class="container-fluid flexbox white">
-    <div style="flex-grow: 1;"></div>
+    <div class="upper-menu-grow" style="flex-grow: 1;"></div>
     {% if user.role != "worker" and user.role not in "superadmin" %}
         <a href="acceptanceact" class="btn btn-primary margin5"><strong>+</strong> Акт приема</a>
-        <!-- <a href="penalspecification" class="btn btn-primary margin5 disabled"><strong>+</strong> Спецификация пенала</a>
-        <a href="waybill" class="btn btn-primary margin5 disabled"><strong>+</strong> Транспортная накладная</a> -->
+        <a href="penalspecification" class="btn btn-primary margin5"><strong>+</strong> Спецификация пенала</a>
+        <!-- <a href="waybill" class="btn btn-primary margin5 disabled"><strong>+</strong> Транспортная накладная</a> -->
     {% endif %}
     {% if user.role != "security" and user.role not in "superadmin"%}
-        <a href="acceptanceact" class="btn btn-primary margin5 disabled"><strong>+</strong> Акт приема</a>
-        <a href="penalspecification" class="btn btn-primary margin5"><strong>+</strong> Спецификация пенала</a>
+        <!-- <a href="acceptanceact" class="btn btn-primary margin5 disabled"><strong>+</strong> Акт приема</a>
+        <a href="penalspecification" class="btn btn-primary margin5 disabled"><strong>+</strong> Спецификация пенала</a> -->
+        <a href="waste" class="btn btn-primary margin5"><strong>+</strong> Возвратные отходы</a>
         <a href="waybill" class="btn btn-primary margin5"><strong>+</strong> Транспортная накладная</a>
         <a href="transfer" class="btn btn-primary margin5"><strong>+</strong>В производство</a>
     {% endif %}
     {% if user.role in "superadmin"%}
+        <a href="waste" class="btn btn-primary margin5"><strong>+</strong> Возвратные отходы</a>
         <a href="acceptanceact" class="btn btn-primary margin5"><strong>+</strong> Акт приема</a>
         <a href="penalspecification" class="btn btn-primary margin5"><strong>+</strong> Спецификация пенала</a>
         <a href="waybill" class="btn btn-primary margin5"><strong>+</strong> Транспортная накладная</a>
@@ -76,6 +78,9 @@
                 <div class="fill-height"></div>
                 <div class="flexbox">
                     <a href={{ entry.link }} class="btn btn-primary" style="margin-bottom: 5px;">{{ entry.action_text }}</a>
+                    {% if entry.link2 %}
+                        <a href={{ entry.link2 }} class="btn btn-primary" style="margin-bottom: 5px;">{{ entry.action2_text }}</a>
+                    {% endif %}
                     {% if entry.status_class == "done" %}
                         <a archive-link={{ entry.archive_link }} class="btn btn-primary archive-button" style="color: white;margin-bottom: 5px;">Архивировать</a>
                     {% endif %}

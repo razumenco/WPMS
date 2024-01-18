@@ -14,7 +14,7 @@ class WaybillForm(ModelForm):
         fields = "__all__"
         exclude = ["status"]
 
-class PenalSpecificationForm(ModelForm):
+class PenalSpecificationFormInit(ModelForm):
 
     class Meta:
         model = PenalSpecification
@@ -27,11 +27,29 @@ class PenalSpecificationForm(ModelForm):
             'sending_worker'
         ]
 
+class PenalSpecificationForm(ModelForm):
+
+    class Meta:
+        model = PenalSpecification
+        fields = ['in_weight']
+
 class PenalSpecificationWeightsForm(ModelForm):
 
     class Meta:
         model = PenalSpecification
         fields = ['weight_list']
+
+class PenalSpecificationCountForm(ModelForm):
+
+    class Meta:
+        model = PenalSpecification
+        fields = ['penal_count', 'kip_count']
+
+class PenalSpecificationCarWeightForm(ModelForm):
+
+    class Meta:
+        model = PenalSpecification
+        fields = ['out_weight']
 
 class AcceptanceActForm(ModelForm):
 
@@ -73,6 +91,16 @@ class AcceptanceActCarWeightsForm(ModelForm):
         model = AcceptanceAct
         fields = [
             'out_weight'
+        ]
+
+class AcceptanceActSecondMaterialForm(ModelForm):
+
+    class Meta:
+        model = AcceptanceAct
+        fields = [
+            'raw_material2',
+            'penal_count2',
+            'kip_count2'
         ]
 
 class TransferToProdForm(ModelForm):
@@ -121,4 +149,10 @@ class ProductNomForm(ModelForm):
 
     class Meta:
         model = ProductNom
+        fields = "__all__"
+
+class WasteForm(ModelForm):
+
+    class Meta:
+        model = Waste
         fields = "__all__"
