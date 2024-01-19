@@ -102,7 +102,7 @@ def store(request):
             doc["link"] = f"/penalspecification/{sp.id}/weight"
             doc["action_text"] = "Указать веса б/б"
             doc["link2"] = f"/penalspecification/{sp.id}/count"
-            doc["action2_text"] = "Указать количество кип"
+            doc["action2_text"] = "Указать количество уп."
             doc["status_class"] = "not-done"
             doc["status_text"] = "Взвешивание пенала"
         if sp.status == "carweight":
@@ -530,7 +530,7 @@ def penal_specification_count(request, id):
         return redirect("/login")
     spec = get_object_or_404(PenalSpecification, pk=id)
     template = loader.get_template("management/form.html")
-    header = "Добавить количество кип"
+    header = "Добавить количество упаковок"
     if request.method == "POST":
         form = PenalSpecificationCountForm(request.POST, instance=spec)
         if form.is_valid():
@@ -562,16 +562,11 @@ def penal_specification_carweight(request, id):
             spec.status = "done"
             if not spec.weight_list:
                 weight = []
-                kip_weight = (int(spec.out_weight) - int(spec.in_weight)) / spec.kip_count
-                kip_count = spec.kip_count
-                i = spec.penal_count
-                while kip_count > 0:
-                    if kip_count // i > 0:
-                        kip_count -= i
-                        weight.append(i * kip_weight)
-                    else:
-                        weight.append(kip_count * kip_weight)
-                        kip_count -= i
+                bag_weight = (int(spec.out_weight) - int(spec.in_weight)) / spec.kip_count
+                bag_count = spec.kip_count
+                while bag_count > 0:
+                    weight.append(bag_weight)
+                    bag_count -= 1
                 spec.weight_list = weight
             spec.save()
             return redirect("/store")
@@ -691,6 +686,7 @@ def acceptanceactweight(request, id):
         if form.is_valid():
             act = form.save(commit=False)
             act.status = "secondmaterial"
+            act.penal_count = 3
             act.save()
             return redirect("/store")
         else:
@@ -718,6 +714,7 @@ def acceptanceactsecondmaterial(request, id):
         if form.is_valid():
             act = form.save(commit=False)
             act.status = "weight"
+            act.penal_count2 = 3
             act.save()
             return redirect("/store")
         else:

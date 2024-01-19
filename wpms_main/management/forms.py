@@ -43,7 +43,7 @@ class PenalSpecificationCountForm(ModelForm):
 
     class Meta:
         model = PenalSpecification
-        fields = ['penal_count', 'kip_count']
+        fields = ['kip_count']
 
 class PenalSpecificationCarWeightForm(ModelForm):
 
@@ -81,7 +81,6 @@ class AcceptanceActWeightsForm(ModelForm):
     class Meta:
         model = AcceptanceAct
         fields = [
-            'penal_count',
             'kip_count'
         ]
 
@@ -99,7 +98,6 @@ class AcceptanceActSecondMaterialForm(ModelForm):
         model = AcceptanceAct
         fields = [
             'raw_material2',
-            'penal_count2',
             'kip_count2'
         ]
 

@@ -60,7 +60,7 @@ var translateLabelsDict = {
         'penal_count': 'Количество кип в б/б',
         'in_weight': 'Вес автомобиля на въезде (в кг)',
         'out_weight': 'Вес автомобиля на выезде (в кг)',
-        'kip_count': 'Общее количество кип'
+        'kip_count': 'Общее количество упаковок'
     }, 
     'waybill': {
         'waybill_num': 'Номер накладной',
