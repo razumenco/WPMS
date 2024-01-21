@@ -731,7 +731,7 @@ def acceptanceactsecondmaterial(request, id):
 def acceptance_act_skip_second_material(request, id):
     if not request.user.is_authenticated:
         return redirect("/login")
-    if not Users.objects.filter(username=request.user.username).get().role in "superadmin":
+    if not Users.objects.filter(username=request.user.username).get().role in "superadmin" and not (Users.objects.filter(username=request.user.username).get().role == "worker"):
         return redirect("/")
     if request.method == "GET":
         act = get_object_or_404(AcceptanceAct, pk=id)
@@ -1241,3 +1241,4 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect("/login")
+
