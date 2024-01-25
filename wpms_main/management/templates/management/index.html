@@ -46,18 +46,32 @@
                     </div>
                 </div>
             </a>
-            <div class="card form-card form-card-inactive">
-                <div class="card-body flexbox-col">
-                    <div class="fill"></div>
-                    <img src="{% static 'images/manufacturing.png' %}" alt="">
-                    <div class="card-header">
-                        <svg width="40px" height="40px">
-                            <use href="#lock"></use>
-                        </svg>
-                        Производство
+            {% if user.role in "superadmin" %}
+                <a href="/production">
+                    <div class="card form-card form-card-active">
+                        <div class="card-body flexbox-col">
+                            <div class="fill"></div>
+                            <img src="{% static 'images/manufacturing.png' %}" alt="">
+                            <div class="card-header">
+                                Производство
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% else %}
+                <div class="card form-card form-card-inactive">
+                    <div class="card-body flexbox-col">
+                        <div class="fill"></div>
+                        <img src="{% static 'images/manufacturing.png' %}" alt="">
+                        <div class="card-header">
+                            <svg width="40px" height="40px">
+                                <use href="#lock"></use>
+                            </svg>
+                            Производство
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
             <div class="card form-card form-card-inactive">
                 <div class="card-body flexbox-col">
                     <div class="fill"></div>

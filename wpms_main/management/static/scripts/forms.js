@@ -3,7 +3,8 @@ var translateLabelsDict = {
         'type': 'Вид организации (напр. ООО)',
         'name': 'Наименование',
         'address': 'Адрес',
-        'is_contragent': 'Является контрагентом'
+        'is_contragent': 'Является контрагентом',
+        'is_default': 'Организация по умолчанию'
     },
     'rawmaterial': {
         'feature': 'Характеристика сырья'
@@ -60,7 +61,7 @@ var translateLabelsDict = {
         'penal_count': 'Количество кип в б/б',
         'in_weight': 'Вес автомобиля на въезде (в кг)',
         'out_weight': 'Вес автомобиля на выезде (в кг)',
-        'kip_count': 'Общее количество упаковок'
+        'kip_count': 'Общее количество б/б'
     }, 
     'waybill': {
         'waybill_num': 'Номер накладной',
@@ -212,8 +213,8 @@ $(document).ready(function() {
     $("input, select, textarea").css("max-width", "600px");
     $("input:checkbox").removeClass("form-control");
     $("input:checkbox").addClass("form-check-input");
-    checkLabel = $("label[for='id_is_default']").addClass("form-check-label");
-    checkLabel.remove();
+    checkLabel = $("label[for='id_is_default']");
+    // checkLabel.remove();
     $("input:checkbox").css("position", "relative").css("margin", "10px").after(checkLabel);
     translateForm();
     let weightList = $("textarea[name='weight_list']");

@@ -1,3 +1,4 @@
+import math
 import os
 
 import openpyxl
@@ -16,7 +17,14 @@ def index(request):
     if not request.user.is_authenticated:
         return redirect("/login")
     template = loader.get_template("management/index.html")
-    context = {}
+    context = {"user": Users.objects.filter(username=request.user.username).get()}
+    return HttpResponse(template.render(context, request))
+
+def production(request):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    template = loader.get_template("management/production.html")
+    context = {"user": Users.objects.filter(username=request.user.username).get()}
     return HttpResponse(template.render(context, request))
 
 def store(request):
@@ -102,7 +110,7 @@ def store(request):
             doc["link"] = f"/penalspecification/{sp.id}/weight"
             doc["action_text"] = "Указать веса б/б"
             doc["link2"] = f"/penalspecification/{sp.id}/count"
-            doc["action2_text"] = "Указать количество уп."
+            doc["action2_text"] = "Указать количество б/б"
             doc["status_class"] = "not-done"
             doc["status_text"] = "Взвешивание пенала"
         if sp.status == "carweight":
@@ -369,7 +377,7 @@ def generate_transfer_xls(tmplt_path, res_path, penal_data, transfer_data):
         pg.append([penal[0], "", "", "", penal[1], penal[2], penal[3]])
     pg.append(["№ смены", "Дата", "время", "№ пенала", "Вес выданной бутылки", "Кол-во кип", "ФИО ответственных"])
     for transfer in transfer_data:
-        pg.append([transfer[0], transfer[1], transfer[2], transfer[3], transfer[4], transfer[5], transfer[6]])
+        pg.append([transfer[0], transfer[1], transfer[2], transfer[3], transfer[4], transfer[5]])
     wb.save(res_path)
 
 def generate_transfer(request, fn):
@@ -397,7 +405,6 @@ def generate_transfer(request, fn):
         t.append(act.act_num)
         t.append(transfer.transfer_weight)
         t.append(transfer.transfer_count)
-        t.append(f"Склад: {transfer.store_executive}, Цех: {transfer.prod_executive}")
         transfer_data.append(t)
     generate_transfer_xls(tmplt_path, res_path, penal_data, transfer_data)
     with open(res_path, "rb") as file:
@@ -441,7 +448,7 @@ def generate_waybill(request, id, fn):
     data["receiver"] = f'{wb.specification.receiver.type}"{wb.specification.receiver.name}" {wb.specification.receiver.address}'
     data["feature"] = str(wb.specification.product_nom)
     data["count"] = len(wb.specification.weight_list)
-    data["weight"] = sum(wb.specification.weight_list)
+    data["weight"] = wb.specification.out_weight - wb.specification.in_weight
     data["driver"] = str(wb.driver)
     data["mark"] = str(wb.car.mark)
     data["reg_num"] = str(wb.car.reg_num)
@@ -491,7 +498,10 @@ def penal_specification_init(request, id):
             return redirect("/store")
         else:
             header = "Ошибка при сохранении"
-    form = PenalSpecificationFormInit()
+    if Organization.objects.filter(is_default=True).first():
+        form = PenalSpecificationFormInit(initial={'sender': Organization.objects.filter(is_default=True).first()})
+    else:
+        form = PenalSpecificationFormInit()
     context = {
         "form": form,
         "url": f"/penalspecification/{id}/init",
@@ -562,12 +572,21 @@ def penal_specification_carweight(request, id):
             spec.status = "done"
             if not spec.weight_list:
                 weight = []
-                bag_weight = (int(spec.out_weight) - int(spec.in_weight)) / spec.kip_count
+                bag_weight = round((int(spec.out_weight) - int(spec.in_weight)) / spec.kip_count)
                 bag_count = spec.kip_count
                 while bag_count > 0:
                     weight.append(bag_weight)
                     bag_count -= 1
                 spec.weight_list = weight
+            else:
+                real_weight = int(spec.out_weight) - int(spec.in_weight)
+                delta = real_weight - sum(spec.weight_list)
+                weight = []
+                if delta > 1:
+                    added_weight = delta / len(spec.weight_list)
+                    for w in spec.weight_list:
+                        weight.append(round(added_weight + w))
+                    spec.weight_list = weight
             spec.save()
             return redirect("/store")
         else:
@@ -663,7 +682,10 @@ def acceptanceactinit(request, id):
             return redirect("/store")
         else:
             header = "Ошибка при сохранении"
-    form = AcceptanceActFormInit()
+    if Organization.objects.filter(is_default=True).first():
+        form = AcceptanceActFormInit(initial={'receiver': Organization.objects.filter(is_default=True).first()})
+    else:
+        form = AcceptanceActFormInit()
     context = {
         "form": form,
         "url": f"/acceptanceact/{id}/init",
@@ -753,7 +775,7 @@ def acceptanceactcarweight(request, id):
             act = form.save(commit=False)
             act.status = "done"
             weight = []
-            kip_weight = (int(act.in_weight) - int(act.out_weight)) / act.kip_count if not act.kip_count2 else (int(act.in_weight) - int(act.out_weight)) / (act.kip_count + act.kip_count2)
+            kip_weight = round((int(act.in_weight) - int(act.out_weight)) / act.kip_count) if not act.kip_count2 else round((int(act.in_weight) - int(act.out_weight)) / (act.kip_count + act.kip_count2))
             kip_count = act.kip_count
             kip_count2 = act.kip_count2
             i = act.penal_count
@@ -831,7 +853,7 @@ def generate_acceptance_act_xls(tmplt_path, res_path, data):
         total -= data["penal_count"]
     pg.append([" ", " ", " ", " "])
     pg.append([" ", " ", " ", " "])
-    pg.append([data["kip_count"], "ИТОГО", " ", sum(data["weights"]), " ", data["platform"]])
+    pg.append([data["kip_count"], "ИТОГО", " ", data["in_weight"] - data["out_weight"], " ", data["platform"]])
     pg.append(["Вес автомобиля на въезде:", data["in_weight"], " ", " "])
     pg.append(["Вес автомобиля на выезде:", data["out_weight"], "ИТОГО", data["in_weight"] - data["out_weight"], " "])
     pg.append([" ", "ПРИНЯЛ", " ", " ", " ", data["receiving_worker"]])

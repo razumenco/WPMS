@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block navlist %}
+    <li id="nav-forms" class="nav-item active">
+        <a class="nav-link" href="production">Счётчики</a>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid flexbox">
+        <div class="card form-card">
+            <div class="card-body flexbox-col">
+                <div class="card-header">
+                    <h2>Раскиповщик</h2>
+                </div>
+                <p style="margin-bottom: 20px; border-bottom: 2px dashed rgb(0, 0, 80);"></p>
+                <div class="fill-height"></div>
+                <a href="http://31.133.203.75:8000" class="btn btn-primary" style="margin-bottom: 5px;">Перейти</a>
+            </div>
+        </div>
+
+        <div class="card form-card">
+            <div class="card-body flexbox-col">
+                <div class="card-header">
+                    <h2>Дробилка 1</h2>
+                </div>
+                <p style="margin-bottom: 20px; border-bottom: 2px dashed rgb(0, 0, 80);"></p>
+                <div class="fill-height"></div>
+                <a href="http://31.133.203.75:8100" class="btn btn-primary" style="margin-bottom: 5px;">Перейти</a>
+            </div>
+        </div>
+
+        <div class="card form-card">
+            <div class="card-body flexbox-col">
+                <div class="card-header">
+                    <h2>Дробилка 2</h2>
+                </div>
+                <p style="margin-bottom: 20px; border-bottom: 2px dashed rgb(0, 0, 80);"></p>
+                <div class="fill-height"></div>
+                <a href="http://31.133.203.75:8200" class="btn btn-primary" style="margin-bottom: 5px;">Перейти</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
