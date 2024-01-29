@@ -7,7 +7,7 @@ class Organization(models.Model):
     name = models.CharField(max_length=50, null=True)
     address = models.TextField(null=True)
     is_default = models.BooleanField(null=True)
-    is_contragent = models.BooleanField(null=True)
+    is_contragent = models.BooleanField(null=True, default=False)
 
     def __str__(self):
         if self.is_contragent:

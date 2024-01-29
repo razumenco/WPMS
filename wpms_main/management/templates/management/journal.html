@@ -16,9 +16,16 @@
     <li id="nav-journal" class="nav-item active">
         <a class="nav-link" href="journal">Журнал</a>
     </li>
+    <li id="nav-materials" class="nav-item">
+        <a class="nav-link" href="materials">Склад сырья</a>
+    </li>
 {% endblock %}
 
 {% block content %}
+<div class="container-fluid flexbox white">
+    <div class="upper-menu-grow" style="flex-grow: 1;"></div>
+    <a href={{ transfer_link }} class="btn btn-primary margin5">Сгенерировать xls</a>
+</div>
 <div class="container-fluid flexbox">
     <div class="archive-table">
         <table class="table" style="text-align: center;">

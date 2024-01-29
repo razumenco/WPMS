@@ -47,6 +47,7 @@ urlpatterns = [
     path('transfer/<str:fn>', views.generate_transfer, name='generate_transfer'),
     path('journal', views.journal, name='journal'),
     path('waste', views.waste, name='waste'),
+    path('materials', views.materials, name='materials'),
     path('login', views.login_view, name='login'),
     path('logout', views.logout_view, name='login')
 ]

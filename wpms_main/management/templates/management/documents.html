@@ -17,6 +17,9 @@
         <li id="nav-journal" class="nav-item">
             <a class="nav-link" href="journal">Журнал</a>
         </li>
+        <li id="nav-materials" class="nav-item">
+            <a class="nav-link" href="materials">Склад сырья</a>
+        </li>
     {% endif %}
 {% endblock %}
 
@@ -46,7 +49,7 @@
 <div class="container-fluid flexbox">
     {% csrf_token %}
 
-    {% if transfer %}
+    <!-- {% if transfer %}
         {% if user.role == "worker" or user.role in "superadmin" %}
         <div class="card form-card">
             <div class="card-body flexbox-col">
@@ -59,13 +62,17 @@
             </div>
         </div>
         {% endif%}
-    {% endif %}
+    {% endif %} -->
 
     {% for entry in doc_data %}
         <div class="card form-card">
             <div class="card-body flexbox-col">
                 <div class="card-header">
-                    <h2>{{ entry.type }} № {{ entry.id }}</h2>
+                    {% if entry.id%}
+                        <h2>{{ entry.type }} № {{ entry.id }}</h2>
+                    {% else %}
+                        <h2>{{ entry.type }} (номер не заполнен)</h2>
+                    {% endif %}
                 </div>
                 <div class={{ entry.status_class }}>
                     <p class={{ entry.status_class }}>{{ entry.status_text }}</p>

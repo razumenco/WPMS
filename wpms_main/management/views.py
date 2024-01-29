@@ -1,5 +1,6 @@
 import math
 import os
+from datetime import timedelta
 
 import openpyxl
 from django.contrib.auth import authenticate, logout, login
@@ -36,7 +37,8 @@ def store(request):
         doc = {}
         doc["id"] = act.act_num
         doc["type"] = "Акт о приеме сырья"
-        doc["date"] = act.date.strftime("%d.%m.%Y %H:%M")
+        act_date = act.date + timedelta(hours=3)
+        doc["date"] = act_date.strftime("%d.%m.%Y %H:%M")
         doc["sender"] = " ".join(str(act.sender).split()[1:])
         doc["receiver"] = " ".join(str(act.receiver).split()[1:])
         doc["obj_id"] = act.id
@@ -89,7 +91,8 @@ def store(request):
         doc = {}
         doc["id"] = sp.specification_num
         doc["type"] = "Спецификация пенала"
-        doc["date"] = sp.date.strftime("%d.%m.%Y %H:%M")
+        sp_date = sp.date + timedelta(hours=3)
+        doc["date"] = sp_date.strftime("%d.%m.%Y %H:%M")
         doc["sender"] = " ".join(str(sp.sender).split()[1:])
         doc["receiver"] = " ".join(str(sp.receiver).split()[1:])
         doc["obj_id"] = sp.id
@@ -138,7 +141,8 @@ def store(request):
         doc["id"] = wb.waybill_num
         doc["obj_id"] = wb.id
         doc["type"] = "Транспортная накладная"
-        doc["date"] = wb.date.strftime("%d.%m.%Y %H:%M")
+        wb_date = wb.date + timedelta(hours=3)
+        doc["date"] = wb_date.strftime("%d.%m.%Y %H:%M")
         doc["sender"] = " ".join(str(wb.specification.sender).split()[1:])
         doc["receiver"] = " ".join(str(wb.specification.receiver).split()[1:])
         doc["archive_link"] = f"waybill/{wb.id}/archive"
@@ -239,7 +243,8 @@ def archive(request):
         doc = {}
         doc["id"] = act.act_num
         doc["type"] = "Акт о приеме сырья"
-        doc["date"] = act.date.strftime("%d.%m.%Y %H:%M")
+        doc_date = act.date + timedelta(hours=3)
+        doc["date"] = doc_date.strftime("%d.%m.%Y %H:%M")
         doc["sender"] = " ".join(str(act.sender).split()[1:])
         doc["receiver"] = " ".join(str(act.receiver).split()[1:])
         doc["obj_id"] = act.id
@@ -254,7 +259,8 @@ def archive(request):
         doc = {}
         doc["id"] = sp.specification_num
         doc["type"] = "Спецификация пенала"
-        doc["date"] = sp.date.strftime("%d.%m.%Y %H:%M")
+        sp_date = sp.date + timedelta(hours=3)
+        doc["date"] = sp_date.strftime("%d.%m.%Y %H:%M")
         doc["sender"] = " ".join(str(sp.sender).split()[1:])
         doc["receiver"] = " ".join(str(sp.receiver).split()[1:])
         doc["obj_id"] = sp.id
@@ -270,9 +276,10 @@ def archive(request):
         doc["id"] = wb.waybill_num
         doc["obj_id"] = wb.id
         doc["type"] = "Транспортная накладная"
-        doc["date"] = wb.date.strftime("%d.%m.%Y %H:%M")
-        doc["sender"] = " ".join(str(wb.specification.sender).split()[1:])
-        doc["receiver"] = " ".join(str(wb.specification.receiver).split()[1:])
+        wb_date = wb.date + timedelta(hours=3)
+        doc["date"] = wb_date.strftime("%d.%m.%Y %H:%M")
+        doc["sender"] = " ".join(str(wb.specification.sender).split()[1:]) if wb.specification else "-"
+        doc["receiver"] = " ".join(str(wb.specification.receiver).split()[1:]) if wb.specification else "-"
         doc["archive_link"] = f"waybill/{wb.id}/archive"
         doc["delete_link"] = f"waybill/{wb.id}/delete"
         doc["link"] = f"/waybill/{wb.id}/generate/waybill{wb.waybill_num}.xls"
@@ -400,8 +407,9 @@ def generate_transfer(request, fn):
             act_nums.add(act.act_num)
         t = []
         t.append(transfer.shift_num)
-        t.append(transfer.date.strftime("%d.%m.%Y"))
-        t.append(transfer.date.strftime("%H:%M"))
+        transfer_date = transfer.date + timedelta(hours=3)
+        t.append(transfer_date.strftime("%d.%m.%Y"))
+        t.append(transfer_date.strftime("%H:%M"))
         t.append(act.act_num)
         t.append(transfer.transfer_weight)
         t.append(transfer.transfer_count)
@@ -442,7 +450,8 @@ def generate_waybill(request, id, fn):
     res_path = os.path.join(os.path.dirname(__file__), 'static', 'files', 'waybill.xlsx')
     wb = get_object_or_404(Waybill, pk=id)
     data = {}
-    data["date"] = wb.date.strftime("%d.%m.%Y")
+    wb_date = wb.date + timedelta(hours=3)
+    data["date"] = wb_date.strftime("%d.%m.%Y")
     data["num"] = wb.waybill_num
     data["sender"] = f'{wb.specification.sender.type}"{wb.specification.sender.name}" {wb.specification.sender.address}'
     data["receiver"] = f'{wb.specification.receiver.type}"{wb.specification.receiver.name}" {wb.specification.receiver.address}'
@@ -570,6 +579,7 @@ def penal_specification_carweight(request, id):
         if form.is_valid():
             spec = form.save(commit=False)
             spec.status = "done"
+            valid = True
             if not spec.weight_list:
                 weight = []
                 bag_weight = round((int(spec.out_weight) - int(spec.in_weight)) / spec.kip_count)
@@ -580,6 +590,8 @@ def penal_specification_carweight(request, id):
                 spec.weight_list = weight
             else:
                 real_weight = int(spec.out_weight) - int(spec.in_weight)
+                if sum(spec.weight_list) > real_weight:
+                    valid = False
                 delta = real_weight - sum(spec.weight_list)
                 weight = []
                 if delta > 1:
@@ -587,8 +599,11 @@ def penal_specification_carweight(request, id):
                     for w in spec.weight_list:
                         weight.append(round(added_weight + w))
                     spec.weight_list = weight
-            spec.save()
-            return redirect("/store")
+            if valid:
+                spec.save()
+                return redirect("/store")
+            else:
+                header = "Ошибка. Веса б/б больше чем разница весов автомобиля."
         else:
             header = "Ошибка при вводе данных"
     form = PenalSpecificationCarWeightForm()
@@ -626,7 +641,8 @@ def generate_penal_specification(request, id, fn):
     sp = get_object_or_404(PenalSpecification, pk=id)
     data = {}
     data["num"] = sp.specification_num
-    data["date"] = sp.date.strftime("%d.%m.%Y")
+    sp_date = sp.date + timedelta(hours=3)
+    data["date"] = sp_date.strftime("%d.%m.%Y")
     data["sender"] = f'{sp.sender.type}"{sp.sender.name}"'
     data["receiver"] = f'{sp.receiver.type}"{sp.receiver.name}"'
     data["weights"] = sp.weight_list
@@ -817,9 +833,25 @@ def transfer(request):
     header = "Отправить в производство"
     if request.method == "POST":
         form = TransferToProdForm(request.POST)
+        valid = True
         if form.is_valid():
-            form.save()
-            return redirect("/store")
+            act = AcceptanceAct.objects.get(pk=form.cleaned_data["act"].id)
+            remain_weight = sum(act.weight_list)
+            remain_count = act.kip_count if not act.kip_count2 else act.kip_count + act.kip_count2
+            for transfer in TransferToProd.objects.filter(act_id=act.id):
+                remain_count -= transfer.transfer_count
+                remain_weight -= transfer.transfer_weight
+            print(remain_count)
+            print(form.cleaned_data["transfer_count"])
+            if remain_weight < form.cleaned_data["transfer_weight"]:
+                valid = False
+                header = "Ошибка. Вес превышает оставшийся вес в партии."
+            if remain_count < form.cleaned_data["transfer_count"]:
+                valid = False
+                header = "Ошибка. Количество кип превышает оставшиеся в партии."
+            if valid:
+                form.save()
+                return redirect("/store")
         else:
             header = "Ошибка при сохранении"
     bank_form = TransferToProdForm()
@@ -868,7 +900,8 @@ def generate_acceptance_act(request, id, fn):
     act = get_object_or_404(AcceptanceAct, pk=id)
     data = {}
     data["num"] = act.act_num
-    data["date"] = act.date.strftime("%d.%m.%Y")
+    act_date = act.date + timedelta(hours=3)
+    data["date"] = act_date.strftime("%d.%m.%Y")
     data["receiver"] = f'{act.receiver.type}"{act.receiver.name}"'
     data["sender"] = f'{act.sender.type}"{act.sender.name}"'
     data["car"] = f"{act.car.mark} {act.car.reg_num}"
@@ -904,7 +937,7 @@ def organization(request):
             return redirect("handbook")
         else:
             header = "Ошибка при сохранении"
-    bank_form = OrganizationForm()
+    bank_form = OrganizationForm(initial={'is_default': False})
     context = {
         "form": bank_form,
         "url": "organization",
@@ -1177,11 +1210,12 @@ def journal(request):
         return redirect("/login")
     template = loader.get_template("management/journal.html")
     journal_data = []
-    for act in AcceptanceAct.objects.filter(status="done"):
+    for act in AcceptanceAct.objects.filter(status__in=["done", "archive"]):
         remain_count = 0
         remain_weight = 0
+        act_date = act.date + timedelta(hours=3)
         data = {
-            "date": act.date.strftime("%d.%m.%Y"),
+            "date": act_date.strftime("%d.%m.%Y"),
             "act": f"{act.act_num} {Organization.objects.get(pk=act.sender_id).name}",
             "nom": RawMaterial.objects.get(pk=act.raw_material_id).feature,
             "rest_count": remain_count,
@@ -1197,8 +1231,9 @@ def journal(request):
         data["final_rest_weight"] = remain_weight
         journal_data.append(data)
         for transfer in TransferToProd.objects.filter(act_id=act.id).order_by("date"):
+            transfer_date = transfer.date + timedelta(hours=3)
             data = {
-                "date": transfer.date.strftime("%d.%m.%Y"),
+                "date": transfer_date.strftime("%d.%m.%Y"),
                 "act": f"{act.act_num} {Organization.objects.get(pk=act.sender_id).name}",
                 "nom": RawMaterial.objects.get(pk=act.raw_material_id).feature,
                 "rest_count": remain_count,
@@ -1217,7 +1252,8 @@ def journal(request):
     context = {
         "user": Users.objects.filter(username=request.user.username).get(),
         "cur_date": timezone.now().strftime("%d.%m.%Y"),
-        "journal_data": journal_data
+        "journal_data": journal_data,
+        "transfer_link": f"/transfer/transfer_to_prod{timezone.now().day}.{timezone.now().month}.{timezone.now().year}.xlsx"
     }
     return HttpResponse(template.render(context, request))
 
@@ -1239,6 +1275,36 @@ def waste(request):
         "url": "waste",
         "header": header,
         "href": "store"
+    }
+    return HttpResponse(template.render(context, request))
+
+def materials(request):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    template = loader.get_template("management/materials.html")
+    docs = []
+    for act in AcceptanceAct.objects.filter(status__in=["done", "archive"]):
+        act_data = {}
+        act_data["sender"] = act.sender
+        act_date = act.date + timedelta(hours=3)
+        act_data["date"] = act_date.strftime("%d.%m.%Y")
+        if act.raw_material2:
+            act_data["material"] = ", ".join([str(act.raw_material), str(act.raw_material2)])
+        else:
+            act_data["material"] = str(act.raw_material)
+        act_data["weight"] = sum(act.weight_list)
+        act_data["count"] = act.kip_count if not act.kip_count2 else act.kip_count + act.kip_count2
+        if TransferToProd.objects.filter(act_id=act.id).exists():
+            for transfer in TransferToProd.objects.filter(act_id=act.id):
+                act_data["weight"] -= transfer.transfer_weight
+                act_data["count"] -= transfer.transfer_count
+        else:
+            pass
+        if act_data["weight"] > 10:
+            docs.append(act_data)
+    context = {
+        "user": Users.objects.filter(username=request.user.username).get(),
+        "docs": docs
     }
     return HttpResponse(template.render(context, request))
 
