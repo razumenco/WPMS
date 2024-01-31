@@ -48,6 +48,8 @@ urlpatterns = [
     path('journal', views.journal, name='journal'),
     path('waste', views.waste, name='waste'),
     path('materials', views.materials, name='materials'),
+    path('brigadeorder', views.brigadeorder, name='brigadeorder'),
+    path('brigadeorder/<int:id>/generate/<str:fn>', views.generate_brigade_order, name='generate_brigade_order'),
     path('login', views.login_view, name='login'),
     path('logout', views.logout_view, name='login')
 ]

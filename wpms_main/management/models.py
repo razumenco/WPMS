@@ -145,13 +145,14 @@ class Users(models.Model):
 
 class Waste(models.Model):
 
-    black_metal = models.IntegerField(null=True)
-    color_metal = models.IntegerField(null=True)
-    off_color_bottle = models.IntegerField(null=True)
-    flex = models.IntegerField(null=True)
-    pss = models.IntegerField(null=True)
-    paper = models.IntegerField(null=True)
-    other = models.IntegerField(null=True)
+    black_metal = models.FloatField(null=True)
+    color_metal = models.FloatField(null=True)
+    off_color_bottle = models.FloatField(null=True)
+    flex = models.FloatField(null=True)
+    pss = models.FloatField(null=True)
+    paper = models.FloatField(null=True)
+    other = models.FloatField(null=True)
+    brigade_num = models.IntegerField(null=True)
     date = models.DateTimeField(auto_now_add=True, blank=True)
 
     def __str__(self):

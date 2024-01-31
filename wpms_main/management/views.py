@@ -3,6 +3,7 @@ import os
 from datetime import timedelta
 
 import openpyxl
+from docxtpl import DocxTemplate
 from django.contrib.auth import authenticate, logout, login
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
@@ -924,6 +925,70 @@ def generate_acceptance_act(request, id, fn):
         response = HttpResponse(content=file)
         response['Content-Type'] = 'application/xlsx'
     return response
+
+def generate_brigade_order_docx(tmplt_path, res_path, data):
+    doc = DocxTemplate(tmplt_path)
+    doc.render(data)
+    doc.save(res_path)
+
+def generate_brigade_order(request, id, fn):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    tmplt_path = os.path.join(os.path.dirname(__file__), 'static', 'files', 'brigade_order_tmplt.docx')
+    res_path = os.path.join(os.path.dirname(__file__), 'static', 'files', 'brigade_order.docx')
+    order = Waste.objects.get(pk=id)
+    data = {}
+    data["black_metal"] = order.black_metal
+    data["color_metal"] = order.color_metal
+    data["off_color_bottle"] = order.off_color_bottle
+    data["pss"] = order.pss
+    data["paper"] = order.paper
+    data["other"] = order.other
+    black_metal_start = 0
+    color_metal_start = 0
+    off_color_bottle_start = 0
+    pss_start = 0
+    paper_start = 0
+    other_start = 0
+    for older_order in Waste.objects.filter(date__lt=order.date):
+        if order.date.m == older_order.date.m:
+            black_metal_start += older_order.black_metal
+            color_metal_start += older_order.color_metal
+            off_color_bottle_start += older_order.off_color_bottle
+            pss_start += older_order.pss
+            paper_start += older_order.paper
+            other_start += older_order.other
+    data["black_metal_start"] = black_metal_start
+    data["color_metal_start"] = color_metal_start
+    data["off_color_bottle_start"] = off_color_bottle_start
+    data["pss_start"] = pss_start
+    data["paper_start"] = paper_start
+    data["other_start"] = other_start
+    data["brigade_num"] = order.brigade_num
+    data["total_start"] = black_metal_start + color_metal_start + off_color_bottle_start + pss_start + paper_start + other_start
+    data["total"] = order.black_metal + order.color_metal + order.off_color_bottle + order.pss + order.paper + order.other
+    generate_brigade_order_docx(tmplt_path, res_path, data)
+    with open(res_path, "rb") as file:
+        response = HttpResponse(content=file)
+        response['Content-Type'] = 'application/docx'
+    return response
+
+def brigadeorder(request):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    doc_data = []
+    template = loader.get_template("management/brigadeorder.html")
+    for waste in Waste.objects.all():
+        date = waste.date + timedelta(hours=3)
+        waste.date = date.strftime('%d.%m.%Y')
+        waste.generate_link = f"brigadeorder/{waste.id}/generate/order{date.strftime('%d.%m.%Y')}.docx"
+        doc_data.append(waste)
+    doc_data.sort(key=lambda x: x.date, reverse=True)
+    context = {
+        "doc_data": doc_data,
+        "user": Users.objects.filter(username=request.user.username).get()
+    }
+    return HttpResponse(template.render(context, request))
 
 def organization(request):
     if not request.user.is_authenticated:

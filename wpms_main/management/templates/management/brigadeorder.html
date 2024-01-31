@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block navlist %}
+    <li id="nav-forms" class="nav-item">
+        <a class="nav-link" href="store">Документы</span></a>
+    </li>
+    <!-- <li id="nav-reports" class="nav-item">
+        <a class="nav-link" href="reports">Отчеты</a>
+    </li> -->
+    <li id="nav-admin" class="nav-item">
+        <a class="nav-link" href="handbook">Справочники</a>
+    </li>
+    <li id="nav-admin" class="nav-item">
+        <a class="nav-link" href="archive">Архив</a>
+    </li>
+    <li id="nav-journal" class="nav-item">
+        <a class="nav-link" href="journal">Журнал</a>
+    </li>
+    <li id="nav-materials" class="nav-item">
+        <a class="nav-link" href="materials">Склад сырья</a>
+    </li>
+    <li id="nav-brigadeorder" class="nav-item active">
+        <a class="nav-link" href="brigadeorder">Возвратные отходы</a>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid flexbox">
+        <div class="archive-table">
+            <table class="table" style="text-align: center;">
+                <thead>
+                    <tr>
+                        <th scope="col">Дата</th>
+                        <th scope="col">Номер бригады</th>
+                        <th scope="col">Черный металл (кг)</th>
+                        <th scope="col">Цветной металл (кг)</th>
+                        <th scope="col">Бутылка нетоварных цветов (кг)</th>
+                        <th scope="col">Флекс (экономия) (кг)</th>
+                        <th scope="col">ПСС (кг)</th>
+                        <th scope="col">Бумага (кг)</th>
+                        <th scope="col">Прочее (кг)</th>
+                        <th scope="col">Действия</th>
+                    </tr>
+                </thead>
+                {% for doc in doc_data %}
+                    <tr>
+                        <td scope="col">{{ doc.date }}</td>
+                        <td scope="col">{{ doc.brigade_num }}</td>
+                        <td scope="col">{{ doc.black_metal }}</td>
+                        <td scope="col">{{ doc.color_metal }}</td>
+                        <td scope="col">{{ doc.off_color_bottle }}</td>
+                        <td scope="col">{{ doc.flex }}</td>
+                        <td scope="col">{{ doc.pss }}</td>
+                        <td scope="col">{{ doc.paper }}</td>
+                        <td scope="col">{{ doc.other }}</td>
+                        <td scope="col">
+                            <a href={{ doc.generate_link }} class="btn btn-primary">DOCX</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}
