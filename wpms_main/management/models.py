@@ -127,7 +127,6 @@ class TransferToProd(models.Model):
     shift_num = models.IntegerField(null=True)
     date = models.DateTimeField(auto_now_add=True, blank=True)
     act = models.ForeignKey(AcceptanceAct, on_delete=models.SET_NULL, null=True)
-    transfer_weight = models.IntegerField(null=True)
     transfer_count = models.IntegerField(null=True)
     store_executive = models.ForeignKey(Worker, on_delete=models.SET_NULL, null=True, related_name='store_executive')
     prod_executive = models.ForeignKey(Worker, on_delete=models.SET_NULL, null=True, related_name='prod_executive')

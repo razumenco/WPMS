@@ -400,10 +400,11 @@ def generate_transfer(request, fn):
         p = []
         act = AcceptanceAct.objects.get(pk=transfer.act_id)
         if act.act_num not in act_nums and act.weight_list:
+            kip_count = act.kip_count if not act.kip_count2 else act.kip_count + act.kip_count2
             p.append(act.act_num)
             p.append(sum(act.weight_list))
-            p.append(act.penal_count * len(act.weight_list))
-            p.append(sum(act.weight_list) / (act.penal_count * len(act.weight_list)))
+            p.append(kip_count)
+            p.append(sum(act.weight_list) / kip_count)
             penal_data.append(p)
             act_nums.add(act.act_num)
         t = []
@@ -837,16 +838,9 @@ def transfer(request):
         valid = True
         if form.is_valid():
             act = AcceptanceAct.objects.get(pk=form.cleaned_data["act"].id)
-            remain_weight = sum(act.weight_list)
             remain_count = act.kip_count if not act.kip_count2 else act.kip_count + act.kip_count2
             for transfer in TransferToProd.objects.filter(act_id=act.id):
                 remain_count -= transfer.transfer_count
-                remain_weight -= transfer.transfer_weight
-            print(remain_count)
-            print(form.cleaned_data["transfer_count"])
-            if remain_weight < form.cleaned_data["transfer_weight"]:
-                valid = False
-                header = "Ошибка. Вес превышает оставшийся вес в партии."
             if remain_count < form.cleaned_data["transfer_count"]:
                 valid = False
                 header = "Ошибка. Количество кип превышает оставшиеся в партии."
@@ -966,7 +960,7 @@ def generate_brigade_order(request, id, fn):
     data["other_start"] = other_start
     data["brigade_num"] = order.brigade_num
     data["total_start"] = black_metal_start + color_metal_start + off_color_bottle_start + pss_start + paper_start + other_start
-    data["total"] = order.black_metal + order.color_metal + order.off_color_bottle + order.pss + order.paper + order.other
+    data["total"] = order.black_metal + order.color_metal + order.off_color_bottle + order.pss + order.paper + order.otherghjb
     generate_brigade_order_docx(tmplt_path, res_path, data)
     with open(res_path, "rb") as file:
         response = HttpResponse(content=file)
@@ -1286,7 +1280,7 @@ def journal(request):
             "rest_count": remain_count,
             "rest_weight": remain_weight,
         }
-        remain_weight += round(sum(act.weight_list) / 1000, 2)
+        remain_weight += round(sum(act.weight_list))
         remain_count += int(act.penal_count * len(act.weight_list))
         data["arrival_count"] = remain_count
         data["arrival_weight"] = remain_weight
@@ -1304,12 +1298,12 @@ def journal(request):
                 "rest_count": remain_count,
                 "rest_weight": remain_weight,
             }
-            remain_weight -= round(transfer.transfer_weight / 1000, 2)
+            remain_weight -= round((sum(act.weight_list) / (act.kip_count if not act.kip_count2 else act.kip_count + act.kip_count2)) * transfer.transfer_count)
             remain_count -= int(transfer.transfer_count)
             data["arrival_count"] = 0
             data["arrival_weight"] = 0
             data["flow_count"] = transfer.transfer_count
-            data["flow_weight"] = round(transfer.transfer_weight / 1000, 2)
+            data["flow_weight"] = round((sum(act.weight_list) / (act.kip_count if not act.kip_count2 else act.kip_count + act.kip_count2)) * transfer.transfer_count)
             data["final_rest_count"] = remain_count
             data["final_rest_weight"] = round(remain_weight, 2)
             journal_data.append(data)
@@ -1350,6 +1344,7 @@ def materials(request):
     docs = []
     for act in AcceptanceAct.objects.filter(status__in=["done", "archive"]):
         act_data = {}
+        act_data["act_num"] = act.act_num
         act_data["sender"] = act.sender
         act_date = act.date + timedelta(hours=3)
         act_data["date"] = act_date.strftime("%d.%m.%Y")
@@ -1357,11 +1352,12 @@ def materials(request):
             act_data["material"] = ", ".join([str(act.raw_material), str(act.raw_material2)])
         else:
             act_data["material"] = str(act.raw_material)
+        act_data["average_weight"] = sum(act.weight_list) / (act.kip_count if not act.kip_count2 else act.kip_count + act.kip_count2)
         act_data["weight"] = sum(act.weight_list)
         act_data["count"] = act.kip_count if not act.kip_count2 else act.kip_count + act.kip_count2
         if TransferToProd.objects.filter(act_id=act.id).exists():
             for transfer in TransferToProd.objects.filter(act_id=act.id):
-                act_data["weight"] -= transfer.transfer_weight
+                act_data["weight"] -= (sum(act.weight_list) / (act.kip_count if not act.kip_count2 else act.kip_count + act.kip_count2)) * transfer.transfer_count
                 act_data["count"] -= transfer.transfer_count
         else:
             pass

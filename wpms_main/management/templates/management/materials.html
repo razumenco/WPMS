@@ -30,18 +30,22 @@
             <table class="table" style="text-align: center;">
                 <thead>
                     <tr>
+                        <th scope="col">Номер акта</th>
                         <th scope="col">Поставщик</th>
                         <th scope="col">Вид сырья</th>
                         <th scope="col">Дата</th>
+                        <th scope="col">Средний вес кипы</th>
                         <th scope="col">Количество кип</th>
                         <th scope="col">Вес (кг)</th>
                     </tr>
                 </thead>
                 {% for doc in docs %}
                     <tr>
+                        <td scope="col">{{ doc.act_num }}</td>
                         <td scope="col">{{ doc.sender }}</td>
                         <td scope="col">{{ doc.material }}</td>
                         <td scope="col">{{ doc.date }}</td>
+                        <td scope="col">{{ doc.average_weight }}</td>
                         <td scope="col">{{ doc.count }}</td>
                         <td scope="col">{{ doc.weight }}</td>
                     </tr>
