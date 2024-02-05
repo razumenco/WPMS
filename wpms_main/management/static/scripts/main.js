@@ -56,6 +56,17 @@ $(document).ready(function() {
         $('.receiver-search:not(:icontains('+ s +'))').parent().hide();
         $('.receiver-search:icontains('+ s +')').parent().show(); 
     });
+
+    $("#num-search").on('keyup', function() {
+        let s = $("#num-search").val();
+        $('.num-search:not(:icontains('+ s +'))').parent().hide();
+        $('.num-search:icontains('+ s +')').parent().show(); 
+    });
+    $("#material-search").on('keyup', function() {
+        let s = $("#material-search").val();
+        $('.material-search:not(:icontains('+ s +'))').parent().hide();
+        $('.material-search:icontains('+ s +')').parent().show(); 
+    });
 });
 
 function getCookie(name) {

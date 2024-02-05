@@ -39,17 +39,34 @@
                         <th scope="col">Вес (кг)</th>
                     </tr>
                 </thead>
-                {% for doc in docs %}
-                    <tr>
-                        <td scope="col">{{ doc.act_num }}</td>
-                        <td scope="col">{{ doc.sender }}</td>
-                        <td scope="col">{{ doc.material }}</td>
-                        <td scope="col">{{ doc.date }}</td>
-                        <td scope="col">{{ doc.average_weight }}</td>
-                        <td scope="col">{{ doc.count }}</td>
-                        <td scope="col">{{ doc.weight }}</td>
-                    </tr>
-                {% endfor %}
+                <tbody>
+                    <td>
+                        <input type="text" id="num-search" class="search">
+                    </td>
+                    <td>
+                        <input type="text" id="sender-search" class="search">
+                    </td>
+                    <td>
+                        <input type="text" id="material-search" class="search">
+                    </td>
+                    <td>
+                        <input type="text" id="date-search" class="search">
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    {% for doc in docs %}
+                        <tr>
+                            <td scope="col" class="num-search">{{ doc.act_num }}</td>
+                            <td scope="col" class="sender-search">{{ doc.sender }}</td>
+                            <td scope="col" class="material-search">{{ doc.material }}</td>
+                            <td scope="col" class="date-search">{{ doc.date }}</td>
+                            <td scope="col">{{ doc.average_weight }}</td>
+                            <td scope="col">{{ doc.count }}</td>
+                            <td scope="col">{{ doc.weight }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     </div>
