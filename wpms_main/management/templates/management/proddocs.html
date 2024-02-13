@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block navlist %}
+    <li id="nav-forms" class="nav-item">
+        <a class="nav-link" href="/production">Счётчики</a>
+    </li>
+    <li id="nav-forms" class="nav-item active">
+        <a class="nav-link" href="/production/documents">Документы</a>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid flexbox white">
+        <div class="upper-menu-grow" style="flex-grow: 1;"></div>
+        {% if user.role != "worker" and user.role not in "superadmin" %}
+        {% endif %}
+        {% if user.role != "security" and user.role not in "superadmin"%}
+            <a href="/productspecification" class="btn btn-primary margin5"><strong>+</strong> Спецификация продукции</a>
+        {% endif %}
+        {% if user.role in "superadmin"%}
+            <a href="/productspecification" class="btn btn-primary margin5"><strong>+</strong> Спецификация продукции</a>
+        {% endif %}
+    </div>
+    <div class="container-fluid flexbox">
+        {% for entry in doc_data %}
+            <div class="card form-card">
+                <div class="card-body flexbox-col">
+                    <div class="card-header">
+                        <h2>{{ entry.type }} № {{ entry.id }}</h2>
+                    </div>
+                    <div class="done">
+                        <p class="done">Оформление завершено</p>
+                        <p>{{ entry.date }}</p>
+                    </div>
+                    <p style="margin-top: 10px;">Поставщик:</p>
+                    <p style="margin-bottom: 5px;"> {{ entry.sender }}</p>
+                    <p>Масса:</p>
+                    <p style="margin-bottom: 20px; border-bottom: 2px dashed rgb(0, 0, 80);"> {{ entry.weight }} кг</p>
+                    <div class="fill-height"></div>
+                    <div class="flexbox">
+                        <a href={{ entry.link }} class="btn btn-primary" style="margin-bottom: 5px;">{{ entry.action_text }}</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

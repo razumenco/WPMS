@@ -156,3 +156,17 @@ class Waste(models.Model):
 
     def __str__(self):
         return f"Возвратные отходы от {self.date.strftime('%d.%m.%Y')}"
+
+
+class ProductSpecification(models.Model):
+
+    date = models.DateTimeField(auto_now_add=True)
+    product_feature = models.ForeignKey(ProductFeature, on_delete=models.SET_NULL, null=True)
+    product_nom = models.ForeignKey(ProductNom, on_delete=models.SET_NULL, null=True)
+    sender = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    brigade_num = models.IntegerField(null=True)
+    weight = models.IntegerField(null=True)
+    kip_count = models.IntegerField(null=True)
+
+    def __str__(self):
+        return f"Спецификация готовой продукции от {self.date.strftime('%d.%m.%Y')}"

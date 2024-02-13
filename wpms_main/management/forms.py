@@ -155,3 +155,9 @@ class WasteForm(ModelForm):
     class Meta:
         model = Waste
         fields = "__all__"
+
+class ProductSpecificationForm(ModelForm):
+
+    class Meta:
+        model = ProductSpecification
+        fields = "__all__"

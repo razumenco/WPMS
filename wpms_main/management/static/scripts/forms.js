@@ -86,6 +86,14 @@ var translateLabelsDict = {
         'paper': 'Бумага (в кг)',
         'other': 'Прочее (в кг)',
         'brigade_num': 'Номер бригады'
+    },
+    'productspecification': {
+        'product_feature': 'Характеристика продукции',
+        'product_nom': 'Номенклатура продукции',
+        'sender': 'Поставщик',
+        'brigade_num': 'Номер бригады',
+        'weight': 'Общий вес (в кг)',
+        'kip_count': 'Количество кип'
     }
 };
 

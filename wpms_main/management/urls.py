@@ -5,6 +5,10 @@ from . import views
 urlpatterns = [
     path('', views.index, name="index"),
     path('production', views.production, name="production"),
+    path('production/documents', views.productiondocuments, name="productiondocuments"),
+    path('productspecification', views.productspecification, name="productspecification"),
+    path('prod', views.prod, name="prod"),
+    path('productspecification/<int:id>/generate/<str:fn>', views.generate_product_specification, name='generate_product_specification'),
     path('store', views.store, name="store"),
     path('handbook', views.handbook, name='handbook'),
     path('archive', views.archive, name='archive'),

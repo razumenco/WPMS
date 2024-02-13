@@ -22,12 +22,109 @@ def index(request):
     context = {"user": Users.objects.filter(username=request.user.username).get()}
     return HttpResponse(template.render(context, request))
 
+def prod(request):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    template = loader.get_template("management/prod.html")
+    table_data = []
+    for nom in ProductNom.objects.all():
+        coming = ProductSpecification.objects.filter(product_nom_id=nom.id)
+        outcoming = PenalSpecification.objects.filter(status__in=["done", "archive"]).filter(product_nom_id=nom.id)
+        if not coming:
+            continue
+        weight = 0
+        for c in coming:
+            weight += c.weight
+        for o in outcoming:
+            weight -= sum(o.weight_list)
+        if weight <= 0:
+            continue
+        spec = {}
+        spec["nums"] = " ,".join(list(map(str, map(lambda x: x.id, coming))))
+        spec["sender"] = " ,".join(list(map(str, map(lambda x: x.sender, coming))))
+        spec["nom"] = str(nom)
+        spec["weight"] = weight
+        table_data.append(spec)
+    context = {
+        "user": Users.objects.filter(username=request.user.username).get(),
+        "table_data": table_data
+    }
+    return HttpResponse(template.render(context, request))
+
 def production(request):
     if not request.user.is_authenticated:
         return redirect("/login")
     template = loader.get_template("management/production.html")
     context = {"user": Users.objects.filter(username=request.user.username).get()}
     return HttpResponse(template.render(context, request))
+
+def productiondocuments(request):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    template = loader.get_template("management/proddocs.html")
+    doc_data = []
+    for spec in ProductSpecification.objects.all():
+        data = {}
+        data["id"] = spec.id
+        data["type"] = "Спецификация продукции"
+        spec_date = spec.date + timedelta(hours=3)
+        data["date"] = spec_date.strftime("%d.%m.%Y %H:%M")
+        data["sender"] = " ".join(str(spec.sender).split()[1:])
+        data["weight"] = spec.weight
+        data["link"] = f"/productspecification/{spec.id}/generate/prodspec{spec.id}.xlsx"
+        data['action_text'] = "Сгенерировать xlsx"
+        doc_data.append(data)
+    context = {
+        "user": Users.objects.filter(username=request.user.username).get(),
+        "doc_data": doc_data
+    }
+    return HttpResponse(template.render(context, request))
+
+def generate_product_specification(request, id, fn):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    tmplt_path = os.path.join(os.path.dirname(__file__), 'static', 'files', 'product_specification_template.xlsx')
+    res_path = os.path.join(os.path.dirname(__file__), 'static', 'files', 'product_specification.xlsx')
+    spec = get_object_or_404(ProductSpecification, pk=id)
+    data = {}
+    data["date"] = f"от {spec.date.strftime('%d.%m.%Y')} г. ДЕНЬ/НОЧЬ"
+    data["brigade_num"] = f"смена {spec.brigade_num}"
+    data["weight_list"] = []
+    data["total"] = spec.weight
+    for i in range(1, spec.kip_count):
+        weight_data = {}
+        weight_data["num"] = i
+        weight_data["color"] = str(spec.product_nom)
+        weight_data["weight"] = round(spec.weight / spec.kip_count)
+        data["weight_list"].append(weight_data)
+    sum_weight = round(spec.weight / spec.kip_count) * (spec.kip_count - 1)
+    last_weight = spec.weight - sum_weight
+    data["weight_list"].append({
+        "num": spec.kip_count,
+        "color": str(spec.product_nom),
+        "weight": last_weight
+    })
+    generate_product_specification_xls(tmplt_path, res_path, data)
+    with open(res_path, "rb") as file:
+        response = HttpResponse(content=file)
+        response['Content-Type'] = 'application/xlsx'
+    return response
+
+def generate_product_specification_xls(tmplt_path, res_path, data):
+    wb = openpyxl.load_workbook(tmplt_path)
+    pg = wb['Лист3']
+    pg["B4"] = data["date"]
+    pg["G8"] = data["brigade_num"]
+    for w in data["weight_list"]:
+        pg.append(["", w["num"], w["color"], w["weight"]])
+    pg.append(["", "", "ИТОГО", data["total"]])
+    pg.append([""])
+    pg.append(["", "", "Должность", "ФИО", "Подпись"])
+    pg.append([""])
+    pg.append([""])
+    pg.append([""])
+    pg.append([""])
+    wb.save(res_path)
 
 def store(request):
     if not request.user.is_authenticated:
@@ -1334,6 +1431,27 @@ def waste(request):
         "url": "waste",
         "header": header,
         "href": "store"
+    }
+    return HttpResponse(template.render(context, request))
+
+def productspecification(request):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    template = loader.get_template("management/form.html")
+    header = "Добавить спецификацию продукции"
+    if request.method == "POST":
+        form = ProductSpecificationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("store")
+        else:
+            header = "Ошибка при сохранении"
+    form = ProductSpecificationForm()
+    context = {
+        "form": form,
+        "url": "productspecification",
+        "header": header,
+        "href": "/production/documents"
     }
     return HttpResponse(template.render(context, request))
 
