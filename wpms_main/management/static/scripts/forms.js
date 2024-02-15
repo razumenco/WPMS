@@ -93,7 +93,7 @@ var translateLabelsDict = {
         'sender': 'Поставщик',
         'brigade_num': 'Номер бригады',
         'weight': 'Общий вес (в кг)',
-        'kip_count': 'Количество кип'
+        'kip_count': 'Количество б\б'
     }
 };
 

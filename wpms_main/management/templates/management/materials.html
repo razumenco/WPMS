@@ -43,21 +43,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <td>
-                        <input type="text" id="num-search" class="search">
-                    </td>
-                    <td>
-                        <input type="text" id="sender-search" class="search">
-                    </td>
-                    <td>
-                        <input type="text" id="material-search" class="search">
-                    </td>
-                    <td>
-                        <input type="text" id="date-search" class="search">
-                    </td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <tr>
+                        <td>
+                            <input type="text" id="num-search" class="search">
+                        </td>
+                        <td>
+                            <input type="text" id="sender-search" class="search">
+                        </td>
+                        <td>
+                            <input type="text" id="material-search" class="search">
+                        </td>
+                        <td>
+                            <input type="text" id="date-search" class="search">
+                        </td>
+                        <td></td>
+                        <td style="border: 2px solid black;">ИТОГО:</td>
+                        <td style="border: 2px solid black;" id="table-total"> {{ total }}</td>
+                    </tr>
                     {% for doc in docs %}
                         <tr>
                             <td scope="col" class="num-search">{{ doc.act_num }}</td>
@@ -66,7 +68,7 @@
                             <td scope="col" class="date-search">{{ doc.date }}</td>
                             <td scope="col">{{ doc.average_weight }}</td>
                             <td scope="col">{{ doc.count }}</td>
-                            <td scope="col">{{ doc.weight }}</td>
+                            <td scope="col" class="weight">{{ doc.weight }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

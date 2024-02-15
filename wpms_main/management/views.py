@@ -40,14 +40,16 @@ def prod(request):
         if weight <= 0:
             continue
         spec = {}
-        spec["nums"] = " ,".join(list(map(str, map(lambda x: x.id, coming))))
-        spec["sender"] = " ,".join(list(map(str, map(lambda x: x.sender, coming))))
+        spec["nums"] = " ,".join(set(map(str, map(lambda x: x.id, coming))))
+        spec["sender"] = " ,".join(set(map(str, map(lambda x: x.sender, coming))))
         spec["nom"] = str(nom)
         spec["weight"] = weight
         table_data.append(spec)
+    total = sum(map(lambda x: int(x["weight"]), table_data))
     context = {
         "user": Users.objects.filter(username=request.user.username).get(),
-        "table_data": table_data
+        "table_data": table_data,
+        "total": total
     }
     return HttpResponse(template.render(context, request))
 
@@ -1443,7 +1445,7 @@ def productspecification(request):
         form = ProductSpecificationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect("store")
+            return redirect("/production/documents")
         else:
             header = "Ошибка при сохранении"
     form = ProductSpecificationForm()
@@ -1481,9 +1483,11 @@ def materials(request):
             pass
         if act_data["weight"] > 10:
             docs.append(act_data)
+    total = sum(map(lambda x: int(x["weight"]), docs))
     context = {
         "user": Users.objects.filter(username=request.user.username).get(),
-        "docs": docs
+        "docs": docs,
+        "total": total
     }
     return HttpResponse(template.render(context, request))
 

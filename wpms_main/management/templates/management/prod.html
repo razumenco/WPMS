@@ -49,13 +49,13 @@
                 <td>
                     <input type="text" id="material-search" class="search">
                 </td>
-                <td></td>
+                <td style="border: 2px solid black;" id="table-total"> {{ total }}</td>
                 {% for doc in table_data %}
                     <tr>
                         <td scope="col" class="num-search">{{ doc.nums }}</td>
                         <td scope="col" class="sender-search">{{ doc.sender }}</td>
                         <td scope="col" class="material-search">{{ doc.nom }}</td>
-                        <td scope="col">{{ doc.weight }}</td>
+                        <td scope="col" class="weight">{{ doc.weight }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
